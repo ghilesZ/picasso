@@ -2,6 +2,8 @@
 
 type point = float * float
 
+let to_int_point (x,y) = (int_of_float x),(int_of_float y)
+
 let print fmt (x,y) = Format.fprintf fmt "(%f,%f)" x y
 
 (* convex hull computation *)

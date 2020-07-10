@@ -25,7 +25,6 @@ module type DrawingBackend = sig
 
   val draw_poly : color -> point list -> unit
   val fill_poly : color -> point list -> unit
-
 end
 
 module Make(D:DrawingBackend) = struct
