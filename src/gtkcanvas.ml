@@ -33,6 +33,27 @@ let get_drawable () =
   try Option.get !drawable
   with Failure _ -> failwith "drawable should be set before canvas operations"
 
+(* building the main view *)
+let build width height =
+  let window = GWindow.window ~width:width ~height:height ~title:"Picasso" () in
+  window#connect#destroy ~callback:GMain.Main.quit |> ignore;
+  window#event#add ([`ALL_EVENTS]);
+  (* main container *)
+  let vbox = GPack.vbox ~packing:window#add () in
+  (* create a gui configuration toolbar in the high area *)
+  let canvas = Canvas.create_canvas ~packing:vbox#add ~width ~height in
+  window,canvas
+
+let go width height =
+  (* gtk window initialization *)
+  GtkMain.Main.init () |> ignore;
+  (* building the components *)
+  let window,_canvas = build width height in
+  (* setting up communication between components *)
+  (* entering gtk main loop *)
+  window#show ();
+  GMain.Main.main ()
+
 let init (dr:internal) =
   load_font();
   set_drawable dr
