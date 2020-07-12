@@ -1,3 +1,5 @@
+open Tools
+
 (* Speed *)
 let sx = 1000.
 and sy = 1000.
@@ -132,24 +134,24 @@ let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
 (* abstract element edition *)
 (****************************)
 
-(* (\* given a window and a scene, returns a function that maps an
- *    abstract coordinate to a point of the scene to the window *\)
- * let normalize u =
- *   let s,w = u.scene,u.window in
- *   let to_coord (min_x,max_x) (min_y,max_y) (a,b) =
- *     let a = projection (min_x,max_x) (w.padding, (w.sx-.w.padding)) a
- *     and b = projection (min_y,max_y) (w.padding, (w.sy-.w.padding)) b
- *     in a, b
- *   in
- *   to_coord (s.x_min,s.x_max) (s.y_min,s.y_max) *)
+(* given a window and a scene, returns a function that maps an
+   abstract coordinate to a point of the scene to the window *)
+let normalize u =
+  let s,w = u.scene,u.window in
+  let to_coord (min_x,max_x) (min_y,max_y) (a,b) =
+    let a = projection (min_x,max_x) (w.padding, (w.sx-.w.padding)) a
+    and b = projection (min_y,max_y) (w.padding, (w.sy-.w.padding)) b
+    in a, b
+  in
+  to_coord (s.x_min,s.x_max) (s.y_min,s.y_max)
 
 (* given a window and a scene, returns a function that maps an
-    a point of the window to the abstract coordinate of the scene *)
-(* let denormalize u =
- *   let s,w = u.scene,u.window in
- *   let to_coord (min_x,max_x) (min_y,max_y) (a,b) =
- *     let a = projection (w.padding, (w.sx-.w.padding)) (min_x,max_x) a
- *     and b = projection (w.padding, (w.sy-.w.padding)) (min_y,max_y) b
- *     in (a, b)
- *   in
- *   to_coord (s.x_min,s.x_max) (s.y_min,s.y_max) *)
+ *     a point of the window to the abstract coordinate of the scene *)
+let denormalize u =
+  let s,w = u.scene,u.window in
+  let to_coord (min_x,max_x) (min_y,max_y) (a,b) =
+    let a = projection (w.padding, (w.sx-.w.padding)) (min_x,max_x) a
+    and b = projection (w.padding, (w.sy-.w.padding)) (min_y,max_y) b
+    in (a, b)
+  in
+  to_coord (s.x_min,s.x_max) (s.y_min,s.y_max)

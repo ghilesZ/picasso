@@ -1,9 +1,7 @@
-class canvas ?packing ?width ?height ?show () =
-  (* Create the containing vbox. *)
-  let vbox = GPack.vbox ?width ?height ?packing ?show ~border_width:2 () in
+class canvas ?packing ?width ?height () =
 
   (* Create the drawing area. *)
-  let hbox = GPack.hbox ?width ?height ~packing:vbox#add () in
+  let hbox = GPack.hbox ?width ?height ?packing () in
   object (self)
     inherit Clickable.clickable ~width:500
                                 ~height:500
@@ -46,21 +44,20 @@ class canvas ?packing ?width ?height ?show () =
 
     (* Repaint the widget. *)
     method repaint () =
-      (* let module Draw =
-       *   Drawer.Make(
-       *       struct
-       *         let internal = self#get_drawable()
-       *         include Gtkcanvas
-       *       end)
-       * in
-       * Draw.clear();
-       * (\* Draw the elements *\)
-       * Draw.draw (self#get_render());
-       * Draw.ending();
-       * () *)
+      let module Draw =
+        Backend.Make(
+            struct
+              let internal = self#get_drawable()
+              include Gtkcanvas
+            end)
+      in
+      Draw.clear();
+      (* Draw the elements *)
+      Draw.draw (self#get_render());
+      Draw.ending();
       ()
-  end
 
+  end
 
 (* constructor *)
 let create_canvas ~packing ~height ~width =
