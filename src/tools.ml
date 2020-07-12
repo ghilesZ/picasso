@@ -1,3 +1,7 @@
+(* useful type aliases *)
+type point = float * float
+type range = float * float
+
 let foi = float_of_int
 let iof = int_of_float
 

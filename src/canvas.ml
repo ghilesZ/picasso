@@ -45,7 +45,7 @@ class canvas ?packing ?width ?height () =
     (* Repaint the widget. *)
     method repaint () =
       let module Draw =
-        Backend.Make(
+        Drawer.Make(
             struct
               let internal = self#get_drawable()
               include Gtkcanvas
