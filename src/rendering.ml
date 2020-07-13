@@ -10,7 +10,6 @@ type color        =  int * int * int
 type t = {
     window      : window_settings;
     scene       : scene_settings;
-    dim_handler : dh;
     (* graphical options *)
     grid        : bool;
     axes        : bool;
@@ -30,12 +29,6 @@ and scene_settings = {
     y_max  : float;
   }
 
-and dh = {
-    x_var : string;
-    y_var : string;
-    cuts  : (string * float) list;
-  }
-
 let empty_scene = {
     x_min  = -1000.;
     x_max  = 1000.;
@@ -43,23 +36,12 @@ let empty_scene = {
     y_max  = 1000.;
   }
 
-let initital_dh = {
-    x_var = "x";
-    y_var = "y";
-    cuts  = [];
-  }
-
 let create ?padding:(pad=60.) sx sy = {
     window      = {padding = pad; sx; sy};
     scene       = empty_scene;
-    dim_handler = initital_dh;
     axes        = true;
     grid        = true;
   }
-
-let get_x render = render.dim_handler.x_var
-
-let get_y render = render.dim_handler.y_var
 
 let toggle_grid r = {r with grid = not r.grid}
 let toggle_axes r = {r with axes = not r.axes}
@@ -97,42 +79,11 @@ let zoom_scene a = scale_scene a zo
 
 let unzoom_scene a = scale_scene a (1./.zo)
 
-let change_var_x x a = {a with dim_handler = {a.dim_handler with x_var = x}}
-
-let change_var_y y a = {a with dim_handler = {a.dim_handler with y_var = y}}
-
 let change_size_x x a = {a with window = {a.window with sx = x}}
 
 let change_size_y y a= {a with window = {a.window with sy = y}}
 
 let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
-
-(* (\**************************************************************************\)
- * (\* string manipulation of some properties : useful to communicate with gui*\)
- * (\**************************************************************************\)
- *
- * let set_property r key value =
- *   match key with
- *   | "X axis" -> change_var_x value r
- *   | "Y axis" -> change_var_y value r
- *   | "x_min"  -> {r with scene = {r.scene with x_min = int_of_string value |> foi }}
- *   | "x_max"  -> {r with scene = {r.scene with x_max = int_of_string value |> foi }}
- *   | "y_min"  -> {r with scene = {r.scene with y_min = int_of_string value |> foi }}
- *   | "y_max"  -> {r with scene = {r.scene with y_max = int_of_string value |> foi }}
- *   | _ -> failwith ("unknown property"^key)
- *
- * let properties r = [
- *     ("X axis", r.dim_handler.x_var);
- *     ("Y axis", r.dim_handler.y_var);
- *     "x_min", (string_of_int (iof r.scene.x_min));
- *     "x_max", (string_of_int (iof r.scene.x_max));
- *     "y_min", (string_of_int (iof r.scene.y_min));
- *     "y_max", (string_of_int (iof r.scene.y_max))
- *   ] *)
-
-(****************************)
-(* abstract element edition *)
-(****************************)
 
 (* given a window and a scene, returns a function that maps an
    abstract coordinate to a point of the scene to the window *)

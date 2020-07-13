@@ -19,26 +19,20 @@ class canvas ?packing ?width ?height () =
       self#mouse_set
         ~expose:
         (fun (a,b) ->
-          let newrender = !render |> Rendering.change_size (float a) (float b) in
-          render := newrender;
+          render := !render |> Rendering.change_size (float a) (float b);
           self#repaint())
         ~drag:
         ((fun _ _ -> ()),
          (fun (a,b) (x,y) ->
-           let difx = x -. a in
-           let dify = y -. b in
-           let newrender = Rendering.translate_scene (difx,dify) (!render) in
-           render := newrender;
+           render := Rendering.translate_scene (x -. a, y -. b) (!render);
            self#repaint ();
         ))
         ~scrollwheel:(fun direction ->
-          let newrender =
+          render :=
             (match direction with
              | `DOWN ->  Rendering.zoom_scene (!render)
              | `UP ->  Rendering.unzoom_scene (!render)
-             | _ -> !render)
-          in
-          render := newrender;
+             | _ -> !render);
           self#repaint ())
       ()
 
@@ -54,7 +48,6 @@ class canvas ?packing ?width ?height () =
       Draw.clear();
       (* Draw the elements *)
       Draw.draw (self#get_render());
-      Draw.ending();
       ()
 
   end

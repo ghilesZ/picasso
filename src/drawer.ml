@@ -8,7 +8,7 @@ module Make(D:Backend.T) = struct
 
   let _ = D.init D.internal
 
-  let ending = D.ending
+  let close = D.ending
 
   let width = D.width () |> float
   let height = D.height () |> float
@@ -185,5 +185,4 @@ module Make(D:Backend.T) = struct
      * Option.iter (draw_concrete black render) (Rendering.get_cur render); *)
     if render.grid then draw_grid render;
     if render.axes then draw_axes render
-
 end
