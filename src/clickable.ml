@@ -5,8 +5,7 @@ type mouse_move_fun = Geometry.point -> Geometry.point -> unit
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
-  let vbox = GPack.vbox ~width ~height ~packing () in
-  let da = GMisc.drawing_area ~width ~height ~packing:vbox#add () in
+  let da = GMisc.drawing_area ~width ~height ~packing () in
   let drawable = lazy (new GDraw.drawable da#misc#window) in
 
   let mc = Gdk.Cursor.create `ARROW in

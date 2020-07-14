@@ -38,7 +38,9 @@ class canvas ~packing ~width ~height () =
 
     (* Repaint the widget. *)
     method repaint () =
-      Gtkcanvas.set_drawable (self#get_drawable());
+      Format.printf "repainting the widget\n%!";
+      let drawable = self#get_drawable() in
+      Gtkcanvas.set_drawable drawable;
       Draw.clear();
       Draw.draw (self#get_render());
       ()
@@ -61,17 +63,14 @@ let build render =
   let window = GWindow.window ~width ~height ~title () in
   window#connect#destroy ~callback:GMain.Main.quit |> ignore;
   window#event#add ([`ALL_EVENTS]);
-
-  (* main container *)
   let vbox = GPack.vbox ~packing:window#add () in
-  Format.printf "vbox\n";
-  ignore (create_canvas ~packing:vbox#add ~height ~width);
+  let canvas = create_canvas ~packing:vbox#add ~height ~width in
+  let render = ref render in
+  canvas#set_render render;
   window
 
 let show render =
-  (* gtk window initialization *)
   GtkMain.Main.init () |> ignore;
-  Format.printf "GtkMain.init\n";
   let window = build render in
   window#show ();
   GMain.Main.main ()
