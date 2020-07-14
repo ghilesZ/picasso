@@ -22,11 +22,10 @@ class canvas ~packing ~width ~height () =
           render := !render |> Rendering.change_size (float a) (float b);
           self#repaint())
         ~drag:
-        ((fun _ _ -> ()),
          (fun (a,b) (x,y) ->
            render := Rendering.translate_scene (x -. a, y -. b) (!render);
            self#repaint ();
-        ))
+         )
         ~scrollwheel:(fun direction ->
           render :=
             (match direction with
@@ -38,7 +37,6 @@ class canvas ~packing ~width ~height () =
 
     (* Repaint the widget. *)
     method repaint () =
-      Format.printf "repainting the widget\n%!";
       let drawable = self#get_drawable() in
       Gtkcanvas.set_drawable drawable;
       Draw.clear();
