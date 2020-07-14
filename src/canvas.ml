@@ -1,12 +1,12 @@
-class canvas ?packing ?width ?height () =
+open Tools
 
+module Draw = Drawer.Make(Gtkcanvas)
+
+class canvas ~packing ~width ~height () =
   (* Create the drawing area. *)
-  let hbox = GPack.hbox ?width ?height ?packing () in
+  let hbox = GPack.hbox ~width ~height ~packing () in
   object (self)
-    inherit Clickable.clickable ~width:500
-                                ~height:500
-                                ~packing:hbox#add
-                                ()
+    inherit Clickable.clickable ~width ~height ~packing:hbox#add ()
     val mutable rend = None
 
     method get_render () =
@@ -38,20 +38,40 @@ class canvas ?packing ?width ?height () =
 
     (* Repaint the widget. *)
     method repaint () =
-      let module Draw =
-        Drawer.Make(
-            struct
-              let internal = self#get_drawable()
-              include Gtkcanvas
-            end)
-      in
+      Gtkcanvas.set_drawable (self#get_drawable());
       Draw.clear();
-      (* Draw the elements *)
       Draw.draw (self#get_render());
       ()
-
   end
 
 (* constructor *)
 let create_canvas ~packing ~height ~width =
   new canvas ~packing ~height ~width ()
+
+(* building the main view *)
+let build render =
+  let open Rendering in
+  let width = render.window.sx |> iof in
+  let height = render.window.sy |> iof in
+  let title =
+    match render.window.title with
+    | Some s -> s
+    | None -> "Picasso"
+  in
+  let window = GWindow.window ~width ~height ~title () in
+  window#connect#destroy ~callback:GMain.Main.quit |> ignore;
+  window#event#add ([`ALL_EVENTS]);
+
+  (* main container *)
+  let vbox = GPack.vbox ~packing:window#add () in
+  Format.printf "vbox\n";
+  ignore (create_canvas ~packing:vbox#add ~height ~width);
+  window
+
+let show render =
+  (* gtk window initialization *)
+  GtkMain.Main.init () |> ignore;
+  Format.printf "GtkMain.init\n";
+  let window = build render in
+  window#show ();
+  GMain.Main.main ()

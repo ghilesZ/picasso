@@ -19,6 +19,7 @@ and window_settings = {
     padding : float;
     sx : float;
     sy : float;
+    title : string option
   }
 
 and scene_settings = {
@@ -36,8 +37,8 @@ let empty_scene = {
     y_max  = 1000.;
   }
 
-let create ?padding:(pad=60.) sx sy = {
-    window      = {padding = pad; sx; sy};
+let create ?title ?padding:(pad=60.) sx sy = {
+    window      = {padding = pad; sx; sy; title};
     scene       = empty_scene;
     axes        = true;
     grid        = true;
@@ -66,14 +67,11 @@ let translate_scene (x,y) a =
 let scale_scene a alpha =
   let center_x = 0.5 *. (a.scene.x_max +. a.scene.x_min) in
   let center_y = 0.5 *. (a.scene.y_max +. a.scene.y_min) in
-  let nxmin = center_x +. (a.scene.x_min -. center_x) *. alpha in
-  let nymin = center_y +. (a.scene.y_min -. center_y) *. alpha in
-  let nxmax = center_x +. (a.scene.x_max -. center_x) *. alpha in
-  let nymax = center_y +. (a.scene.y_max -. center_y) *. alpha in
-  {a with scene = {x_min = nxmin;
-                   x_max = nxmax;
-                   y_min = nymin;
-                   y_max = nymax;}}
+  let x_min = center_x +. (a.scene.x_min -. center_x) *. alpha in
+  let y_min = center_y +. (a.scene.y_min -. center_y) *. alpha in
+  let x_max = center_x +. (a.scene.x_max -. center_x) *. alpha in
+  let y_max = center_y +. (a.scene.y_max -. center_y) *. alpha in
+  {a with scene = {x_min; x_max; y_min; y_max}}
 
 let zoom_scene a = scale_scene a zo
 

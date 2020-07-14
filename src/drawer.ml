@@ -6,20 +6,19 @@ module Make(D:Backend.T) = struct
   (* Initialization and Backend setting *)
   (**************************************)
 
-  let _ = D.init D.internal
-
-  let close = D.ending
-
-  let width = D.width () |> float
-  let height = D.height () |> float
+  let width () = D.width () |> float
+  let height () = D.height () |> float
 
   let x_min = ref 0.
   let x_max = ref 0.
   let y_min = ref 0.
   let y_max = ref 0.
 
+  let square ((a,b) as bl) ((c,d) as tr) =
+    [bl; c,b; tr; a,d]
+
   (* screen as a polygon *)
-  let screen = [(0.,0.); (width,0.); (width,height); (0.,height)]
+  let screen () = square (0.,0.) (width(),height())
 
   let to_backend_coord (x,y) =
      D.normalize (!x_min,!x_max) (!y_min,!y_max) (x,y)
@@ -35,7 +34,7 @@ module Make(D:Backend.T) = struct
   (********************************)
 
   let clear () =
-    D.fill_poly white [(0.,0.); (width,0.); (width,height); (0.,height)]
+    D.fill_poly white (screen ())
 
   let draw_line col p1 p2 =
     let p1 = to_backend_coord p1 and p2 = to_backend_coord p2 in
@@ -148,10 +147,10 @@ module Make(D:Backend.T) = struct
     graduation 0.5 fx fy render;
     (* erasing what is in the margin *)
     let rwp = render.window.padding in
-    fill_poly white [(0.,0.);(0.,rwp);(width,rwp);(width,0.)];
-    fill_poly white [(0.,0.);(rwp,0.);(rwp,height);(0.,height)];
-    fill_poly white [(0.,height);(width,height);(width,height-.rwp);(0.,height-.rwp)];
-    fill_poly white [(width-.rwp,height);(width,height);(width,0.);(width-.rwp,0.)];
+    fill_poly white (square (0.,0.) (width(),rwp));
+    fill_poly white (square (0.,0.) (rwp,height()));
+    fill_poly white (square (0.,height()) (width(),height()-.rwp));
+    fill_poly white (square (width()-.rwp,height()) (width(),0.));
     (* vetrtical coordinates *)
     let fx =
       let flag = ref 0 in

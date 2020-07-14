@@ -27,11 +27,11 @@ let load_font () =
   with FontFound f -> font := Some f
 
 let set_drawable d =
-  drawable := Some d
+  Format.printf "setting drawable\n%!"; drawable := Some d
 
 let get_drawable () =
   try Option.get !drawable
-  with Failure _ -> failwith "drawable should be set before canvas operations"
+  with Invalid_argument _ -> failwith "drawable should be set before canvas operations"
 
 let init (dr:internal) =
   load_font();
@@ -39,11 +39,11 @@ let init (dr:internal) =
 
 let ending () = ()
 
-let width() =
+let width () =
   let d = get_drawable() in
   fst (d#size)
 
-let height() =
+let height () =
   let d = get_drawable() in
   snd (d#size)
 

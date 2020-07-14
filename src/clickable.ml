@@ -4,8 +4,9 @@ type mouse_fun = Geometry.point -> unit
 type mouse_move_fun = Geometry.point -> Geometry.point -> unit
 
 class clickable ~packing ~width ~height () =
-
-  let da = GMisc.drawing_area ~width ~height ~packing () in
+  (* Create the containing vbox. *)
+  let vbox = GPack.vbox ~width ~height ~packing () in
+  let da = GMisc.drawing_area ~width ~height ~packing:vbox#add () in
   let drawable = lazy (new GDraw.drawable da#misc#window) in
 
   let mc = Gdk.Cursor.create `ARROW in
@@ -15,7 +16,7 @@ class clickable ~packing ~width ~height () =
   object(self)
         initializer
           (ignore (da#event#add ([`BUTTON_PRESS;`BUTTON_RELEASE;`POINTER_MOTION;`SCROLL]);
-              ()))
+                   ()))
 
     val mutable moving_right = false
     val mutable moving_left = false
@@ -38,7 +39,9 @@ class clickable ~packing ~width ~height () =
       old_right <- None;
       moving_right <- false
 
-    method private  get_drawable () = Lazy.force drawable
+    method get_drawable () =
+      try Lazy.force drawable
+      with Gpointer.Null -> failwith "drawable null"
 
     method private get_coord (x,y) =
       (* in gtk y axis is inversed *)

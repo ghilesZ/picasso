@@ -1,6 +1,6 @@
-(* geometry utilities with fp format *)
-
+(* geometry utilities with floatting point precision *)
 type point = float * float
+type range = float * float
 
 let to_int_point (x,y) = (int_of_float x),(int_of_float y)
 
@@ -33,7 +33,6 @@ let hull = function
           else graham_aux t (h::conv)
        | (h::t,_) -> graham_aux t (h::conv)
      in graham_aux (List.sort cmp l) [p]
-
 
 type line =  float * float * float
 
