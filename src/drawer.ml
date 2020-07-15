@@ -171,7 +171,6 @@ module Make(D:Backend.T) = struct
     in
     graduation 0.5 fx fy render
 
-
   (********************)
   (* drawing elements *)
   (********************)

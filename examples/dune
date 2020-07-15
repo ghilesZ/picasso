@@ -1,4 +1,4 @@
 (executable
   (name hello)
-  (libraries picasso)
+  (libraries picasso apronext)
 )

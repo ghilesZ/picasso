@@ -92,6 +92,8 @@ let change_size_y y a= {a with window = {a.window with sy = y}}
 
 let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
 
+let add r x = {r with elems = x::r.elems}
+
 (* given a window and a scene, returns a function that maps an
    abstract coordinate to a point of the scene to the window *)
 let normalize u =
