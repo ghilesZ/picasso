@@ -1,0 +1,5 @@
+(library
+  (name apronext)
+  (public_name apronext)
+  (libraries apron)
+)

@@ -1,5 +1,5 @@
 (library
   (public_name picasso)
   (name picasso)
-  (libraries lablgtk2)
+  (libraries lablgtk2 apron apronext)
 )

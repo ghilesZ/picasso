@@ -26,7 +26,7 @@ module Make(D:Backend.T) = struct
   (* few constants colors *)
   let black     = D.rgb 0 0 0
   let white     = D.rgb 255 255 255
-  let lightgray = D.rgb 211 211 211
+  let lightgray = D.rgb 230 230 230
   let gray      = D.rgb 128 128 128
 
   (********************************)
@@ -130,19 +130,19 @@ module Make(D:Backend.T) = struct
     and hx',hy' = Rendering.normalize render (right, y0) in
     let th = 2. in
     let thick_line = [(hx, hy+.th); (hx, hy-.th); (hx', hy'-.th);(hx', hy'+.th)] in
-    fill_poly black (List.rev_map (fun (x,y) -> (x, y)) thick_line);
+    fill_poly gray (List.rev_map (fun (x,y) -> (x, y)) thick_line);
     let vx,vy   = Rendering.normalize render (x0, down)
     and vx',vy' = Rendering.normalize render (x0, up) in
     let thick_line = [(vx+.th, vy); (vx-.th, vy); (vx'-.th, vy');(vx'+.th, vy')] in
-    fill_poly black (List.rev_map (fun (x,y) -> (x, y)) thick_line);
+    fill_poly gray (List.rev_map (fun (x,y) -> (x, y)) thick_line);
     let minibar_size = 6. in
     let fx cur =
       let (x,_) = normalize render (cur, down) in
-      draw_line black (x, hy-.minibar_size) (x, (hy+.minibar_size));
+      draw_line gray (x, hy-.minibar_size) (x, (hy+.minibar_size));
     in
     let fy cur =
       let (_,y) = normalize render (left, cur) in
-      draw_line black (vx-.minibar_size, y) ((vx+.minibar_size), y);
+      draw_line gray (vx-.minibar_size, y) ((vx+.minibar_size), y);
     in
     graduation 0.5 fx fy render;
     (* erasing what is in the margin *)
@@ -157,7 +157,7 @@ module Make(D:Backend.T) = struct
       fun cur ->
       let text = Format.asprintf "%.1f" cur in
       let (x,_) = normalize render (cur, down) in
-      if !flag mod 4 = 0 then draw_text black `Center (x,pad) text;
+      if !flag mod 4 = 0 then draw_text gray `Center (x,pad) text;
       incr flag
     in
     (* hozizontal coordinates *)
@@ -166,7 +166,7 @@ module Make(D:Backend.T) = struct
       fun cur ->
       let text = Format.asprintf "%.1f" cur in
       let (_,y) = normalize render (left, cur) in
-      if !flag mod 2 = 0 then draw_text black `Center (pad, y) text;
+      if !flag mod 2 = 0 then draw_text gray `Center (pad, y) text;
       incr flag
     in
     graduation 0.5 fx fy render

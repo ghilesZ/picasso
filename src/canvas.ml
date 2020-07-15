@@ -3,10 +3,10 @@ open Tools
 module Draw = Drawer.Make(Gtkcanvas)
 
 class canvas ~packing ~width ~height () =
-  (* Create the drawing area. *)
   let hbox = GPack.hbox ~width ~height ~packing () in
   object (self)
     inherit Clickable.clickable ~width ~height ~packing:hbox#add ()
+
     val mutable rend = None
 
     method get_render () =
@@ -53,16 +53,11 @@ let build render =
   let open Rendering in
   let width = render.window.sx |> iof in
   let height = render.window.sy |> iof in
-  let title =
-    match render.window.title with
-    | Some s -> s
-    | None -> "Picasso"
-  in
+  let title = Option.value render.window.title ~default:"Picasso" in
   let window = GWindow.window ~width ~height ~title () in
   window#connect#destroy ~callback:GMain.Main.quit |> ignore;
   window#event#add ([`ALL_EVENTS]);
-  let vbox = GPack.vbox ~packing:window#add () in
-  let canvas = create_canvas ~packing:vbox#add ~height ~width in
+  let canvas = create_canvas ~packing:window#add ~height ~width in
   let render = ref render in
   canvas#set_render render;
   window
