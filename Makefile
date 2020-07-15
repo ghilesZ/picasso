@@ -7,4 +7,10 @@ test:
 clean:
 	dune clean
 
+install:
+	dune install picasso
+
+uninstall:
+	dune uninstall picasso
+
 .PHONY: build test clean

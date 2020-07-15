@@ -1,5 +1,3 @@
-open Apronext
-
 module L = Linconsext
 module G = Generatorext
 

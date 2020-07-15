@@ -1,5 +1,4 @@
 open Tools
-open Apronext
 module E = Environmentext
 
 (* Speed *)
@@ -126,7 +125,6 @@ let abstract_screen u x y =
 
 let to_vertices render =
   let norm = normalize render in
-  let open Apronext in
   match render.elems with
   | (_,h)::_ ->
      let h2d = Drawable.fit2d ?x:render.abciss ?y:render.ordinate h in
