@@ -1,4 +1,6 @@
 open Tools
+open Apronext
+module E = Environmentext
 
 (* Speed *)
 let sx = 1000.
@@ -13,6 +15,10 @@ type t = {
     (* graphical options *)
     grid        : bool;
     axes        : bool;
+    (* content *)
+    elems       : (color * Drawable.t) list;
+    abciss      : string option;
+    ordinate    : string option;
   }
 
 and window_settings = {
@@ -37,11 +43,14 @@ let empty_scene = {
     y_max  = 1000.;
   }
 
-let create ?title ?padding:(pad=60.) sx sy = {
+let create ?title ?padding:(pad=60.) ?abciss ?ordinate sx sy = {
     window      = {padding = pad; sx; sy; title};
     scene       = empty_scene;
     axes        = true;
     grid        = true;
+    elems       = [];
+    abciss;
+    ordinate;
   }
 
 let toggle_grid r = {r with grid = not r.grid}
@@ -104,3 +113,26 @@ let denormalize u =
     in (a, b)
   in
   to_coord (s.x_min,s.x_max) (s.y_min,s.y_max)
+
+let abstract_screen u x y =
+  let scenv = E.make [||] [|x; y|] in
+  let to_gens (x,y) = Generatorext.of_float_point scenv [x;y] in
+  [(0.,0.);(u.window.sx,0.);(u.window.sx,u.window.sy);(0.,u.window.sy)]
+  |> List.map (denormalize u)
+  |> List.rev_map to_gens
+  |> Apol.of_generator_list scenv
+
+let to_vertices render =
+  let norm = normalize render in
+  let open Apronext in
+  match render.elems with
+  | (_,h)::_ ->
+     let h2d = Drawable.fit2d ?x:render.abciss ?y:render.ordinate h in
+     let x,y = E.((var_of_dim h2d.env 0),(var_of_dim h2d.env 1)) in
+     let polyscreen = abstract_screen render x y in
+     let to_vert (c,d) =
+       let p = Drawable.fit2d ?x:render.abciss ?y:render.ordinate d in
+       (c,Apol.(to_vertices2D (meet p polyscreen) x y |> List.rev_map norm))
+     in
+     List.rev_map to_vert render.elems
+  | [] -> []

@@ -171,6 +171,14 @@ module Make(D:Backend.T) = struct
     in
     graduation 0.5 fx fy render
 
+
+  (********************)
+  (* drawing elements *)
+  (********************)
+
+  let draw_bounded_2d col vert =
+    vert |> Geometry.hull |> polygon col
+
   let draw =
     fun render ->
     let open Rendering in
@@ -178,10 +186,8 @@ module Make(D:Backend.T) = struct
     x_max:=render.scene.x_max;
     y_min:=render.scene.y_min;
     y_max:=render.scene.y_max;
-    (* let to_draw = Rendering.get_elems render in
-     * List.iter (fun (e,c) -> draw_elem c render e) to_draw;
-     * Option.iter (draw_abstract gray render) (Rendering.abstract_cur render);
-     * Option.iter (draw_concrete black render) (Rendering.get_cur render); *)
+    to_vertices render |>
+    List.iter (fun ((r,g,b),e) -> draw_bounded_2d (D.rgb r g b) e);
     if render.grid then draw_grid render;
     if render.axes then draw_axes render
 end

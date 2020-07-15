@@ -16,13 +16,12 @@ module type ADomain = sig
   val man: t Manager.t
 end
 
-(** functor that allows hiding the use of the manager,
- It also adds few utilities to the Abstract1 module *)
+(** functor that allows hiding the use of the manager, It also adds
+   few utilities to the Abstract1 module *)
 module Make(D:ADomain) = struct
   (** This functor implements all the constraint/generator based
-operations over abstract elements. These are generic and stand for
-Boxes, Octagons and Polyhedra.
-   *)
+     operations over abstract elements. These are generic and stand
+     for Boxes, Octagons and Polyhedra.  *)
 
   (** Conventions :
   - functions ending with _s allow to use/return string instead of variables
@@ -189,8 +188,8 @@ Boxes, Octagons and Polyhedra.
     (* print fmt a *)
     let constraints = to_lincons_list a in
     Format.fprintf fmt "{%a}"
-    (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ";")
-    Linconsext.print) constraints
+      (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ";")
+         Linconsext.print) constraints
 
   (** Projection on 2 dimensions *)
   let proj2D abs v1 v2 =
@@ -210,13 +209,8 @@ Boxes, Octagons and Polyhedra.
 
   (** returns the vertices of an abstract element projected on 2 dimensions *)
   let to_vertices2D abs v1 v2 =
-    let apronvar_v1 = Apron.Var.of_string v1
-    and apronvar_v2 = Apron.Var.of_string v2
-    in
     let gen' = to_generator_array abs in
-    let get_coord l = Apron.Linexpr1.(get_coeff l apronvar_v1,
-                                      get_coeff l apronvar_v2)
-    in
+    let get_coord l = Apron.Linexpr1.(get_coeff l v1, get_coeff l v2) in
     Array.init
       (Generatorext.array_length gen')
 	    (fun i -> get_coord
@@ -224,5 +218,10 @@ Boxes, Octagons and Polyhedra.
 
     |> Array.to_list
     |> List.rev_map (fun(a,b)-> (coeff_to_float a, coeff_to_float b))
+
+
+  (** returns the vertices of an abstract element projected on 2 dimensions *)
+  let to_vertices2D_s abs v1 v2 =
+    to_vertices2D abs (Apron.Var.of_string v1) (Apron.Var.of_string v2)
 
 end
