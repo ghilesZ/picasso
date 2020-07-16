@@ -62,7 +62,7 @@ let define_color =
 let draw_text col pos (x,y) text =
   let text = String.escaped text in
   let pos = match pos with
-    | `Centre -> "center"
+    | `Center -> "center"
     | `Left | `Right -> failwith "draw text left right not implemented"
   in
   let col = define_color col in
