@@ -3,5 +3,5 @@
 (library
   (public_name picasso)
   (name picasso)
-  (libraries lablgtk2 apron)
+  (libraries lablgtk2 apron apronext)
 )
