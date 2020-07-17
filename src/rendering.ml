@@ -20,7 +20,6 @@ type t = {
     (* projection variables *)
     abciss      : string option;
     ordinate    : string option;
-    height      : string option;
     (* elems projected on the projection variables. We differentiate
        the bounded ones from the unbounded ones for efficiency *)
     bounded     : (color * Geometry.hull) list;
@@ -49,7 +48,7 @@ let empty_scene = {
     y_max  = 1000.;
   }
 
-let create ?title ?padding:(pad=60.) ?abciss ?ordinate ?height ?grid ?axis sx sy = {
+let create ?title ?padding:(pad=60.) ?abciss ?ordinate ?grid ?axis sx sy = {
     window      = {padding = pad; sx; sy; title};
     scene       = empty_scene;
     axis        = Option.value axis ~default:true;
@@ -57,7 +56,6 @@ let create ?title ?padding:(pad=60.) ?abciss ?ordinate ?height ?grid ?axis sx sy
     elems       = [];
     abciss;
     ordinate;
-    height;
     bounded = [];
     unbounded = [];
   }
@@ -140,7 +138,7 @@ let abstract_screen r =
 let to_vertice r e =
   let gen' = Apol.to_generator_list e in
   List.rev_map (fun g ->
-      Generatorext.to_vertices2D g
+      Generatorext.to_vertices2D_s g
         (Option.get r.abciss) (Option.get r.ordinate)) gen'
   |> Geometry.hull
 
