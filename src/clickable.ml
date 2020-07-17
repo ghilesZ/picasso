@@ -1,7 +1,8 @@
 (* This module is a drawing area wrapper that handles mouse events and expose event *)
+open Geometry
 
-type mouse_fun = Geometry.point -> unit
-type mouse_move_fun = Geometry.point -> Geometry.point -> unit
+type mouse_fun = point -> unit
+type mouse_move_fun = point -> point -> unit
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -15,6 +16,8 @@ class clickable ~packing ~width ~height () =
         initializer
           (ignore (da#event#add ([`BUTTON_PRESS;`BUTTON_RELEASE;`POINTER_MOTION;`SCROLL]);
                    ()))
+
+    val mutable tolerance = 900.
 
     val mutable old_right = None
     val mutable old_left = None
@@ -74,14 +77,16 @@ class clickable ~packing ~width ~height () =
            false
          ))
 
-    method private drag (f_left : float * float -> float * float -> unit) =
+    method private drag (f_left : point -> point -> unit) =
       ignore (da#event#connect#motion_notify ~callback:(fun c ->
-          let x,y = GdkEvent.Motion.x c,GdkEvent.Motion.y c in
+          let x,y as p1 = GdkEvent.Motion.x c,GdkEvent.Motion.y c in
           (match old_left with
            | None -> ()
-           | Some(a,b) ->
-              f_left (self#get_coord (a,b)) (self#get_coord (x,y));
-              self#set_moving_left (x,y);
+           | Some((a,b) as p2) ->
+              if Geometry.sq_dist p1 p2 >= tolerance then begin
+                  f_left (self#get_coord (a,b)) (self#get_coord (x,y));
+                  self#set_moving_left (x,y);
+                end
           );
           false
          ))

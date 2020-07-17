@@ -176,7 +176,7 @@ module Make(D:Backend.T) = struct
   (********************)
 
   let draw_bounded_2d col vert =
-    vert |> Geometry.hull |> polygon col
+    vert |> polygon col
 
   let draw =
     fun render ->
@@ -185,8 +185,8 @@ module Make(D:Backend.T) = struct
     x_max:=render.scene.x_max;
     y_min:=render.scene.y_min;
     y_max:=render.scene.y_max;
-    to_vertices render |>
+    setup_vars render |> to_vertices |>
     List.iter (fun ((r,g,b),e) -> draw_bounded_2d (D.rgb r g b) e);
     if render.grid then draw_grid render;
-    if render.axes then draw_axes render
+    if render.axis then draw_axes render
 end

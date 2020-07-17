@@ -1,13 +1,18 @@
 (* geometry utilities with floatting point precision *)
 type point = float * float
 type range = float * float
+type hull = point list
 
 let to_int_point (x,y) = (int_of_float x),(int_of_float y)
+
+let sq_dist (a,b) (c,d) =
+  let dx = c-.a and dy = d-.b in
+  dx*.dx +. dy*.dy
 
 let print fmt (x,y) = Format.fprintf fmt "(%f,%f)" x y
 
 (* convex hull computation *)
-let hull = function
+let hull : point list -> hull = function
   | [] -> []
   | ([_] as l) | ([_;_] as l) -> l
   | h::t as l ->
