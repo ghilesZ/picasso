@@ -8,7 +8,7 @@ let print fmt (x,y) = Format.fprintf fmt "(%f,%f)" x y
 
 (* convex hull computation *)
 let hull = function
-  | [] -> failwith "can't build convex envelop with no points"
+  | [] -> []
   | ([_] as l) | ([_;_] as l) -> l
   | h::t as l ->
      (* vector determinant *)

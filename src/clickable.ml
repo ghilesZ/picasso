@@ -16,18 +16,14 @@ class clickable ~packing ~width ~height () =
           (ignore (da#event#add ([`BUTTON_PRESS;`BUTTON_RELEASE;`POINTER_MOTION;`SCROLL]);
                    ()))
 
-    val mutable moving_right = false
-    val mutable moving_left = false
     val mutable old_right = None
     val mutable old_left = None
 
     method private set_moving_left (x,y) =
-      old_left <- Some (x,y);
-      moving_left <- true
+      old_left <- Some (x,y)
 
     method private unset_moving_left () =
-      old_left <- None;
-      moving_left <- false
+      old_left <- None
 
     method get_drawable () =
       try Lazy.force drawable
