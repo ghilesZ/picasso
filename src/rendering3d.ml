@@ -18,8 +18,9 @@ let create ?abciss3 ?ordinate3 ?height3 () = {
     elems3 = []; abciss3;  ordinate3; height3; bounded3 = [];
   }
 
-let add r (x: Drawable.t) =
-  {r with elems3 = (Drawable.to_poly x)::r.elems3}
+let add r (x: Drawable.t) = {
+    r with elems3 = List.rev_append x r.elems3
+  }
 
 (* changes the projection variables. if those are different from the
    previous ones we convert bounded elements to 3d points list *)

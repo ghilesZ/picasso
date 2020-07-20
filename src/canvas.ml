@@ -61,9 +61,3 @@ let build render =
   let render = ref render in
   canvas#set_render render;
   window
-
-let show render =
-  GtkMain.Main.init () |> ignore;
-  let window = build render in
-  window#show ();
-  GMain.Main.main ()

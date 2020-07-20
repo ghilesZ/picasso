@@ -100,7 +100,8 @@ let change_size_y y a= {a with window = {a.window with sy = y}}
 let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
 
 let add r ((c,x): color*Drawable.t) =
-  {r with elems = (c,Drawable.to_poly x)::r.elems}
+  let plist = List.rev_map (fun e -> c,e) x in
+  {r with elems = List.rev_append plist r.elems}
 
 (* given a window and a scene, returns a function that maps an
    abstract coordinate to a point of the scene to the window *)

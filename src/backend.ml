@@ -1,5 +1,6 @@
 open Geometry
 
+(* backend functions required to be able to draw abstract elements *)
 module type T = sig
 
   type color

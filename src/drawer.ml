@@ -171,13 +171,7 @@ module Make(D:Backend.T) = struct
     in
     graduation 0.5 fx fy render
 
-  (********************)
-  (* drawing elements *)
-  (********************)
-
-  let draw_bounded_2d col vert =
-    vert |> polygon col
-
+  (* main drawing function *)
   let draw =
     fun render ->
     let open Rendering in
@@ -186,7 +180,7 @@ module Make(D:Backend.T) = struct
     y_min:=render.scene.y_min;
     y_max:=render.scene.y_max;
     setup_vars render |> to_vertices |>
-    List.iter (fun ((r,g,b),e) -> draw_bounded_2d (D.rgb r g b) e);
+    List.iter (fun ((r,g,b),e) -> polygon (D.rgb r g b) e);
     if render.grid then draw_grid render;
     if render.axis then draw_axes render
 end
