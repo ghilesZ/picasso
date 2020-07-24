@@ -1,3 +1,5 @@
+default: build install
+
 build:
 	dune build
 
