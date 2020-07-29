@@ -15,11 +15,12 @@ type t = {
     (* graphical options *)
     grid        : bool;
     axis        : bool;
+    autofit     : bool;
     (* content *)
     elems       : (color * Apol.t) list;
     (* projection variables *)
-    abciss      : string option;
-    ordinate    : string option;
+    abciss      : string;
+    ordinate    : string;
     (* elems projected on the projection variables. We differentiate
        the bounded ones from the unbounded ones for efficiency *)
     bounded     : (color * Geometry.hull) list;
@@ -42,30 +43,34 @@ and scene_settings = {
   }
 
 let empty_scene = {
-    x_min  = -1000.;
-    x_max  = 1000.;
-    y_min  = -1000.;
-    y_max  = 1000.;
+    x_min  = infinity;
+    x_max  = neg_infinity;
+    y_min  = infinity;
+    y_max  = neg_infinity;
   }
 
-let create ?title ?padding:(pad=60.) ?abciss ?ordinate ?grid ?axis sx sy = {
+let create ?title ?padding:(pad=60.) ?grid ?axis ?autofit  ~abciss ~ordinate sx sy = {
     window      = {padding = pad; sx; sy; title};
     scene       = empty_scene;
     axis        = Option.value axis ~default:true;
     grid        = Option.value grid ~default:true;
+    autofit     = Option.value autofit ~default:true;
     elems       = [];
     abciss;
     ordinate;
-    bounded = [];
-    unbounded = [];
+    bounded     = [];
+    unbounded   = [];
   }
 
 let toggle_grid r = {r with grid = not r.grid}
 let toggle_axes r = {r with axis = not r.axis}
 
 (* set new bounds for a scene *)
-let set_bounds x_min x_max y_min y_max =
-  {x_min; x_max; y_min; y_max}
+let take_in s x_min x_max y_min y_max =
+  {x_min = min x_min s.x_min;
+   x_max = max x_max s.x_max;
+   y_min = min y_min s.y_min;
+   y_max = max y_max s.y_max}
 
 let translate_scene (x,y) a =
   let x = x /. (a.window.sx) in
@@ -100,7 +105,12 @@ let change_size_y y a= {a with window = {a.window with sy = y}}
 let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
 
 let add r ((c,x): color*Drawable.t) =
-  {r with elems = List.fold_left (fun acc e -> (c,e)::acc) r.elems x}
+  let r = {r with elems = List.fold_left (fun acc e -> (c,e)::acc) r.elems x} in
+  if r.autofit then
+    let i1,i2 = Drawable.bounds r.abciss r.ordinate x in
+    let (l1,u1),(l2,u2) = Intervalext.to_float i1,Intervalext.to_float i2 in
+    {r with scene = take_in r.scene l1 u1 l2 u2}
+  else r
 
 (* given a window and a scene, returns a function that maps an
    abstract coordinate to a point of the scene to the window *)
@@ -124,22 +134,9 @@ let denormalize u =
   in
   to_coord (s.x_min,s.x_max) (s.y_min,s.y_max)
 
-(* TODO: recompute screen only when the window changes size and when
-   projection variables are changed *)
-let abstract_screen r =
-  let x = Option.get r.abciss and y = Option.get r.ordinate in
-  let scenv = E.make_s [||] [|x; y|] in
-  let to_gens (x,y) = Generatorext.of_float_point scenv [x;y] in
-  [(0.,0.);(r.window.sx,0.);(r.window.sx,r.window.sy);(0.,r.window.sy)]
-  |> List.rev_map (denormalize r)
-  |> List.rev_map to_gens
-  |> Apol.of_generator_list scenv
-
 let to_vertice r e =
-  let gen' = Apol.to_generator_list e in
-  List.rev_map (fun g ->
-      Generatorext.to_vertices2D_s g
-        (Option.get r.abciss) (Option.get r.ordinate)) gen'
+  Apol.to_generator_list e
+  |> List.rev_map (fun g -> Generatorext.to_vertices2D_s g r.abciss r.ordinate)
   |> Geometry.hull
 
 (* changes the projection variables. if those are different from the
@@ -147,33 +144,27 @@ let to_vertice r e =
  - compute the hull for bounded elements
 -  project the unbounded ones on the specified variables *)
 let set_proj_vars r v1 v2 =
-  match r.abciss,r.ordinate with
-  | Some x, Some y when x=v1 && y = v2 -> r
-  | _ ->
-     let bounded,unbounded =
-       List.fold_left (fun (b,u) (c,pol) ->
-           let p2d = Apol.proj2D_s pol v1 v2 in
-           if Apol.is_bounded p2d then (c,to_vertice r p2d)::b,u
-           else b,(c,p2d)::u
-         ) ([],[]) r.elems
-     in
-     {r with abciss = Some v1; ordinate = Some v2; bounded; unbounded;}
+  if r.abciss = v1 && r.ordinate = v2 then r
+  else
+    let bounded,unbounded =
+      List.fold_left (fun (b,u) (c,pol) ->
+          let p2d = Apol.proj2D_s pol v1 v2 in
+          if Apol.is_bounded p2d then (c,to_vertice r p2d)::b,u
+          else b,(c,p2d)::u
+        ) ([],[]) r.elems
+    in
+    {r with abciss = v1; ordinate = v2; bounded; unbounded;}
 
-(* we setup the two variables for drawing. if None, we pick the two
-   first from the first abstract element *)
-let setup_vars r =
-  let get_v =
-    let nb = ref 0 in
-    fun env -> let r = E.var_of_dim env !nb in incr nb; r
-  in let x =
-    match r.abciss with
-    | None -> Apron.Var.to_string (get_v (List.hd r.elems |> snd).env)
-    | Some x -> x
-  in let y =
-    match r.ordinate with
-    | None -> Apron.Var.to_string (get_v (List.hd r.elems |> snd).env)
-    | Some y ->  y
-  in set_proj_vars r x y
+(* TODO: recompute screen only when the window changes size and when
+   projection variables are changed *)
+let abstract_screen r =
+  let x = r.abciss and y = r.ordinate in
+  let scenv = E.make_s [||] [|x; y|] in
+  let to_gens (x,y) = Generatorext.of_float_point scenv [x;y] in
+  [(0.,0.);(r.window.sx,0.);(r.window.sx,r.window.sy);(0.,r.window.sy)]
+  |> List.rev_map (denormalize r)
+  |> List.rev_map to_gens
+  |> Apol.of_generator_list scenv
 
 let to_vertices r =
   let norm = normalize r in

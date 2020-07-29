@@ -31,3 +31,13 @@ let of_ranges vars ranges =
    |> Abox.to_poly]
 
 let join : t -> t -> t = List.rev_append
+
+let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
+  | [] -> invalid_arg "should be non empty"
+  | h::tl ->
+     let i1 = Apol.bound_variable_s h v1 in
+     let i2 = Apol.bound_variable_s h v2 in
+     List.fold_left (fun (i1,i2) p ->
+     let i1' = Apol.bound_variable_s p v1 in
+     let i2' = Apol.bound_variable_s p v2 in
+     (Intervalext.join i1 i1'),(Intervalext.join i2 i2')) (i1,i2) tl
