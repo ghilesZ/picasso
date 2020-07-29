@@ -109,6 +109,7 @@ let add r ((c,x): color*Drawable.t) =
   if r.autofit then
     let i1,i2 = Drawable.bounds r.abciss r.ordinate x in
     let (l1,u1),(l2,u2) = Intervalext.to_float i1,Intervalext.to_float i2 in
+    (* Format.printf "%f %f %f %f\n%!" l1 u1 l2 u2; *)
     {r with scene = take_in r.scene l1 u1 l2 u2}
   else r
 
@@ -144,16 +145,14 @@ let to_vertice r e =
  - compute the hull for bounded elements
 -  project the unbounded ones on the specified variables *)
 let set_proj_vars r v1 v2 =
-  if r.abciss = v1 && r.ordinate = v2 then r
-  else
-    let bounded,unbounded =
-      List.fold_left (fun (b,u) (c,pol) ->
-          let p2d = Apol.proj2D_s pol v1 v2 in
-          if Apol.is_bounded p2d then (c,to_vertice r p2d)::b,u
-          else b,(c,p2d)::u
-        ) ([],[]) r.elems
-    in
-    {r with abciss = v1; ordinate = v2; bounded; unbounded;}
+  let bounded,unbounded =
+    List.fold_left (fun (b,u) (c,pol) ->
+        let p2d = Apol.proj2D_s pol v1 v2 in
+        if Apol.is_bounded p2d then (c,to_vertice r p2d)::b,u
+        else b,(c,p2d)::u
+      ) ([],[]) r.elems
+  in
+  {r with abciss = v1; ordinate = v2; bounded; unbounded;}
 
 (* TODO: recompute screen only when the window changes size and when
    projection variables are changed *)
@@ -169,6 +168,7 @@ let abstract_screen r =
 let to_vertices r =
   let norm = normalize r in
   let screen = abstract_screen r in
+  let r = set_proj_vars r r.abciss r.ordinate in
   List.fold_left (fun acc (c,e) ->
       let interscreen = Apol.meet e screen in
       if Apol.is_bottom interscreen then acc
