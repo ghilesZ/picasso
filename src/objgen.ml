@@ -36,9 +36,9 @@ let print_vertex : out_channel -> point3d -> id =
     id
   )
 
-(* This function is expanded for efficiency purposes *)
-(* It prints 8 points and then the faces between those points *)
-let handle_c fmt (p0,p1,p2,p3,p4,p5,p6,p7) =
+(* This function is expanded for efficiency purposes. It prints 8
+   points and then the faces between those points *)
+let cube fmt (p0,p1,p2,p3,p4,p5,p6,p7) =
   let id0 = print_vertex fmt p0 in
   let id1 = print_vertex fmt p1 in
   let id2 = print_vertex fmt p2 in
@@ -67,5 +67,5 @@ let handle_c fmt (p0,p1,p2,p3,p4,p5,p6,p7) =
   print_face fmt t12
 
 (* Main function of the module. Prints the cube list *)
-let print_to_file fmt (cubes: cube list) =
-  List.iter (handle_c fmt) cubes
+let cube_list fmt (cubes: cube list) =
+  List.iter (cube fmt) cubes
