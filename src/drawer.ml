@@ -28,6 +28,9 @@ module Make(D:Backend.T) = struct
   let white     = D.rgb 255 255 255
   let lightgray = D.rgb 230 230 230
   let gray      = D.rgb 128 128 128
+  let blue      = D.rgb 0 0 255
+  let red       = D.rgb 255 0 0
+  let green     = D.rgb 0 255 0
 
   (********************************)
   (* redefining drawing utilities *)
@@ -172,8 +175,7 @@ module Make(D:Backend.T) = struct
     graduation 0.5 fx fy render
 
   (* main drawing function *)
-  let draw =
-    fun render ->
+  let draw render =
     let open Rendering in
     x_min:=render.scene.x_min;
     x_max:=render.scene.x_max;

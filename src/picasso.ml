@@ -10,10 +10,6 @@ let in_gtk_canvas render =
 
 let in_js_canvas _render = ()
 
-let to_latex =
-  let module Draw = Drawer.Make(Tex) in
-  fun render output ->
-  Tex.set_output output;
-  Draw.draw render
+let to_latex render output = Tex.output render output
 
 let to_obj _render = ()
