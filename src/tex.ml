@@ -5,8 +5,6 @@ let set_output out =
   let fmt = Format.formatter_of_out_channel oc in
   Texcanvas.output := Some fmt
 
-let define_color = Texcanvas.define_color
-
 let output render filename =
   Texcanvas.init filename;
   List.iter (fun (c,_) -> ignore(Texcanvas.define_color c))

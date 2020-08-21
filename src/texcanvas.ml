@@ -16,8 +16,7 @@ let get_output () =
 
 let emit s = Format.fprintf (get_output ()) s
 
-let name =
-  Format.asprintf "col_%i_%i_%i"
+let name = Format.asprintf "col_%i_%i_%i"
 
 let init out =
   set_output out;
