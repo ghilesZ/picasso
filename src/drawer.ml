@@ -1,5 +1,3 @@
-open Tools
-
 module Make(D:Backend.T) = struct
 
   (**************************************)
@@ -85,7 +83,7 @@ module Make(D:Backend.T) = struct
         else 5.
       in
       let step = dim /. 10. in
-      let exp = log10 step |> iof |> foi in
+      let exp = log10 step |> ceil in
       let c = step /. (10. ** exp) in
       let c = helper_1_2_5 c in
       c *. (10.**exp) *. rating

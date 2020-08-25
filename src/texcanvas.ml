@@ -29,13 +29,16 @@ let ending () =
   emit "\\end{tikzpicture}\n\\end{figure}\n%!";
   emit "\\end{document}\n%!"
 
+let width = ref 0.
+let height = ref 0.
+
 let normalize (x_min,x_max) (y_min,y_max) (x,y) =
-  let x = Tools.projection (x_min,x_max) (0.,18.) x in
-  let y = Tools.projection (y_min,y_max) (0.,18.) y in
+  let x = Tools.projection (x_min,x_max) (0.,!width) x in
+  let y = Tools.projection (y_min,y_max) (0.,!height) y in
   x,y
 
-let width () = 0
-let height () = 0
+let width () = int_of_float !width
+let height () = int_of_float !height
 
 type color = int * int * int
 let rgb r g b : color = (r,g,b)

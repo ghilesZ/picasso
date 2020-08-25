@@ -7,7 +7,7 @@ let sx = 1000.
 and sy = 1000.
 let zo = 2.
 
-type color        =  int * int * int
+type color = int * int * int
 
 type t = {
     window      : window_settings;
@@ -15,7 +15,6 @@ type t = {
     (* graphical options *)
     grid        : bool;
     axis        : bool;
-    autofit     : bool;
     (* content *)
     elems       : (color * Apol.t) list;
     (* projection variables *)
@@ -34,8 +33,8 @@ and window_settings = {
     title : string option
   }
 
+(* drawing scenes are bounded *)
 and scene_settings = {
-    (* the bounds of the scene *)
     x_min  : float;
     x_max  : float;
     y_min  : float;
@@ -49,12 +48,11 @@ let empty_scene = {
     y_max  = neg_infinity;
   }
 
-let create ?title ?padding:(pad=60.) ?grid ?axis ?autofit  ~abciss ~ordinate sx sy = {
+let create ?title ?padding:(pad=60.) ?grid ?axis ~abciss ~ordinate sx sy = {
     window      = {padding = pad; sx; sy; title};
     scene       = empty_scene;
     axis        = Option.value axis ~default:true;
     grid        = Option.value grid ~default:true;
-    autofit     = Option.value autofit ~default:true;
     elems       = [];
     abciss;
     ordinate;
@@ -66,7 +64,7 @@ let toggle_grid r = {r with grid = not r.grid}
 let toggle_axes r = {r with axis = not r.axis}
 
 (* set new bounds for a scene *)
-let take_in s x_min x_max y_min y_max =
+let set_scene s x_min x_max y_min y_max =
   {x_min = min x_min s.x_min;
    x_max = max x_max s.x_max;
    y_min = min y_min s.y_min;
@@ -104,13 +102,13 @@ let change_size_y y a= {a with window = {a.window with sy = y}}
 
 let change_size x y a = {a with window = {a.window with sx = x; sy = y}}
 
-let add r ((c,x): color*Drawable.t) =
+let add ?autofit:(auto=true) r ((c,x): color*Drawable.t) =
   let r = {r with elems = List.fold_left (fun acc e -> (c,e)::acc) r.elems x} in
-  if r.autofit then
+  if auto then
     let i1,i2 = Drawable.bounds r.abciss r.ordinate x in
     let (l1,u1),(l2,u2) = Intervalext.to_float i1,Intervalext.to_float i2 in
     (* Format.printf "%f %f %f %f\n%!" l1 u1 l2 u2; *)
-    {r with scene = take_in r.scene l1 u1 l2 u2}
+    {r with scene = set_scene r.scene l1 u1 l2 u2}
   else r
 
 (* given a window and a scene, returns a function that maps an
@@ -135,15 +133,16 @@ let denormalize u =
   in
   to_coord (s.x_min,s.x_max) (s.y_min,s.y_max)
 
+(* convex hull computation *)
 let to_vertice r e =
   Apol.to_generator_list e
   |> List.rev_map (fun g -> Generatorext.to_vertices2D_s g r.abciss r.ordinate)
   |> Geometry.hull
 
-(* changes the projection variables. if those are different from the
-   previous ones we:
- - compute the hull for bounded elements
--  project the unbounded ones on the specified variables *)
+(* TODO: memoization according to projection variables. changes the
+   projection variables. if those are different from the previous ones
+   we: - compute the hull for bounded elements - project the unbounded
+   ones on the specified variables *)
 let set_proj_vars r v1 v2 =
   let bounded,unbounded =
     List.fold_left (fun (b,u) (c,pol) ->
