@@ -7,7 +7,7 @@ of the boilerplate you usually write to draw abstract elements and
 allows you to view thos with minimum effort from your end.
 
 ### Different backends
-- interactive Gtk window (scrollable, zoomable) 
+- interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window (scrollable, zoomable) 
 - LaTex generation
 - 3D .obj file generation (todo)
-- Non-interractive graphics window (todo)
+- Non-interractive [graphics](https://github.com/ocaml/graphics) window (todo)
