@@ -66,3 +66,9 @@ let polyhedra_to_triangles p v1 v2 v3 : triangle list =
   | [x] -> [(x,x,x)]
   | [x;y] -> [(x,x,y)]
   | _::((_::(_::_) as p2) as p1) -> pairs p1 p2 |> triplets gens
+
+let output render file v1 v2 v3 =
+  let oc = open_out file in
+  Rendering.(List.iter (fun (_,e) ->
+                triangle_list oc (polyhedra_to_triangles e v1 v2 v3)
+               ) render.elems)
