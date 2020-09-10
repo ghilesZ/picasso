@@ -3,6 +3,11 @@ type point = float * float
 type range = float * float
 type hull = point list
 
+(* 3d stuff *)
+type point3d = float * float * float
+type vertex3d = point3d list
+type triangle3D = point3d * point3d * point3d
+
 let to_int_point (x,y) = (int_of_float x),(int_of_float y)
 
 let sq_dist (a,b) (c,d) =
@@ -12,12 +17,12 @@ let sq_dist (a,b) (c,d) =
 let print fmt (x,y) = Format.fprintf fmt "(%f,%f)" x y
 
 (* convex hull computation *)
-let hull : point list -> hull = function
+let hull : point list -> hull =
+  let det (dx1,dy1) (dx2,dy2) = dx1 *. dy2 -. dy1 *. dx2 in
+  function
   | [] -> []
   | ([_] as l) | ([_;_] as l) -> l
   | h::t as l ->
-     (* vector determinant *)
-     let det (dx1,dy1) (dx2,dy2) = dx1 *. dy2 -. dy1 *. dx2 in
      let p = List.fold_left min h t in
      let ccw (px,py) (ax,ay) (bx,by) = det (ax-.px,ay-.py) (bx-.px,by-.py) in
      let cmp p1 p2 =

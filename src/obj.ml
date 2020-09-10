@@ -1,6 +1,5 @@
+open Geometry
 (* This module handles the obj file format generation *)
-type point3d = float * float * float
-type triangle = point3d * point3d * point3d
 type id = int
 type face = id * id * id
 
@@ -53,7 +52,7 @@ let combine f acc l1 l2 =
     ) acc l1
 
 (* builds the list of triangle faces of a polyhedra *)
-let polyhedra_to_triangles p v1 v2 v3 : triangle list =
+let polyhedra_to_triangles p v1 v2 v3 : triangle3D list =
   let open Apronext in
   let gens = Apol.proj3D_s p v1 v2 v3
              |> Apol.to_generator_list

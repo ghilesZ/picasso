@@ -1,4 +1,5 @@
 open Apronext
+open Geometry
 
 type t = {
     (* content *)
@@ -10,9 +11,6 @@ type t = {
     (* elems projected on the projection variables.*)
     bounded3   : vertex3d list;
   }
-
-and vertex3d = point3d list
-and point3d = float * float * float
 
 let create ?abciss3 ?ordinate3 ?height3 () = {
     elems3 = []; abciss3;  ordinate3; height3; bounded3 = [];
@@ -38,5 +36,4 @@ let set_proj_vars r v1 v2 v3 =
            else failwith "unbounded element for obj generation"
          ) [] r.elems3
      in
-     {r with abciss3 = Some v1; ordinate3 = Some v2; height3=Some v3;
-             bounded3}
+     {r with abciss3 = Some v1; ordinate3 = Some v2; height3=Some v3; bounded3}
