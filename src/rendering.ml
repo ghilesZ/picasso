@@ -141,8 +141,9 @@ let to_vertice r e =
 
 (* TODO: memoization according to projection variables. changes the
    projection variables. if those are different from the previous ones
-   we: - compute the hull for bounded elements - project the unbounded
-   ones on the specified variables *)
+   we:
+   - compute the hull for bounded elements
+   - project the unbounded ones on the specified variables *)
 let set_proj_vars r v1 v2 =
   let bounded,unbounded =
     List.fold_left (fun (b,u) (c,pol) ->
