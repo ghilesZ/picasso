@@ -6,6 +6,11 @@ build:
 test:
 	@dune runtest -f
 
+doc:
+	dune build @doc
+	mkdir -p "docs"
+	cp -r _build/default/_doc/_html/* docs/
+
 clean:
 	dune clean
 

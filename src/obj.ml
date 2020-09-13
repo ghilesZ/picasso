@@ -42,7 +42,7 @@ let triangle oc (p0,p1,p2) =
   print_face oc (id0,id1,id2)
 
 (* Main function of the module. Prints the triangle list *)
-let triangle_list oc = List.iter (triangle oc)
+let triangles oc = List.iter (triangle oc)
 
 let combine f acc l1 l2 =
   List.fold_left (fun acc x ->
@@ -52,12 +52,7 @@ let combine f acc l1 l2 =
     ) acc l1
 
 (* builds the list of triangle faces of a polyhedra *)
-let polyhedra_to_triangles p v1 v2 v3 : triangle3D list =
-  let open Apronext in
-  let gens = Apol.proj3D_s p v1 v2 v3
-             |> Apol.to_generator_list
-             |> List.rev_map (fun g -> Generatorext.to_vertices3D_s g v1 v2 v3)
-  in
+let polyhedra_to_triangles gens : triangle3D list =
   let pairs l1 l2 = combine (fun acc x y -> (x,y)::acc) [] l1 l2 in
   let triplets l1 pl = combine (fun acc x (y,z) -> (x,y,z)::acc) [] l1 pl in
   match gens with
@@ -66,8 +61,7 @@ let polyhedra_to_triangles p v1 v2 v3 : triangle3D list =
   | [x;y] -> [(x,x,y)]
   | _::((_::(_::_) as p2) as p1) -> pairs p1 p2 |> triplets gens
 
-let output render file v1 v2 v3 =
+let output r file =
+  let open Rendering3d in
   let oc = open_out file in
-  Rendering.(List.iter (fun (_,e) ->
-                triangle_list oc (polyhedra_to_triangles e v1 v2 v3)
-               ) render.elems)
+  List.iter (fun e -> triangles oc (polyhedra_to_triangles e)) r.bounded3

@@ -12,8 +12,12 @@ type t = {
     bounded3   : vertex3d list;
   }
 
-let create ?abciss3 ?ordinate3 ?height3 () = {
-    elems3 = []; abciss3;  ordinate3; height3; bounded3 = [];
+let create ?abciss ?ordinate ?height () = {
+    elems3 = [];
+    abciss3=abciss;
+    ordinate3=ordinate;
+    height3=height;
+    bounded3 = [];
   }
 
 let add r (x: Drawable.t) = {

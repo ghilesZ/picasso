@@ -1,7 +1,10 @@
 opam-version: "2.0"
 version:"1.0"
 maintainer: "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
-authors: ["Ghiles Ziat <ghiles.ziat@isae-supaero.fr"]
+authors: [
+  "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
+  "Matthieu.journault@lip6.fr"
+  ]
 homepage: "https://github.com/ghilesZ/picasso"
 bug-reports: "https://github.com/ghilesZ/picasso/issues"
 dev-repo: "git+https://github.com/ghilesZ/picasso"
@@ -9,12 +12,10 @@ build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
 ]
-run-test: [
-  ["dune" "runtest" "-p" name "-j" jobs]
-]
 depends: [
   "dune"  {>= "2.1"}
   "ocaml" {>= "4.08"}
+  "lablgtk"
   "apronext"
   "apron"
 ]
