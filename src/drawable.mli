@@ -6,10 +6,14 @@ type point = float list
 type range = float * float
 
 (** {1 Constructors} *)
+
+(** drawable from an element of the Boxes abstract domain *)
 val of_box : Apronext.Abox.t -> t
 
+(** drawable from an element of the Octagon abstract domain *)
 val of_oct : Apronext.Aoct.t -> t
 
+(** drawable from an element of the Polyhedra abstract domain *)
 val of_pol : Apronext.Apol.t -> t
 
 (** Builds the drawable space corresponding to the polyhedra defined
