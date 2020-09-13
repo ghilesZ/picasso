@@ -21,7 +21,7 @@ let create ?abciss ?ordinate ?height () = {
   }
 
 let add r (x: Drawable.t) = {
-    r with elems3 = List.rev_append x r.elems3
+    r with elems3 = Drawable.join x r.elems3
   }
 
 (* changes the projection variables. if those are different from the

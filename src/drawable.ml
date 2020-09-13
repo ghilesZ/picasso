@@ -7,6 +7,7 @@ module E = Environmentext
 type t = Polka.strict Polka.t Apronext.Apol.A.t list
 and point = float list
 and range = float * float
+and var = string
 
 let of_box b = [Abox.to_poly b]
 
