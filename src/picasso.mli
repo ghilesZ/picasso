@@ -4,21 +4,21 @@
 
 open Apron
 
-(** module of drawable abstractions *)
+(** Module of drawable abstractions *)
 module Drawable : sig
 
   (** {1 Types} *)
 
-  (** the type of drawable abstractions  *)
+  (** The type of drawable abstractions  *)
   type t
 
-  (** drawing dimensions are given string identifiers *)
+  (** Drawing dimensions are given string identifiers *)
   type var = string
 
-  (** multi-dimensional points *)
+  (** Multi-dimensional points *)
   type point = float list
 
-  (** float ranges *)
+  (** Float ranges *)
   type range = float * float
 
   (** {1 Constructors} *)
@@ -100,6 +100,8 @@ module Rendering3d : sig
   (** Registers an abstract element into a scene *)
   val add : t -> Drawable.t -> t
 end
+
+(** {1 Drawing utilities} *)
 
 (** Displays a Rendering.t within a scrollable, zoomable gtk canvas *)
 val in_gtk_canvas : Rendering.t -> unit
