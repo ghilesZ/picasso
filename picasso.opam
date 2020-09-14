@@ -3,7 +3,7 @@ version:"1.0"
 maintainer: "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
 authors: [
   "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
-  "Matthieu.journault@lip6.fr"
+  "Matthieu Journault <Matthieu.journault@lip6.fr>"
   ]
 homepage: "https://github.com/ghilesZ/picasso"
 bug-reports: "https://github.com/ghilesZ/picasso/issues"
@@ -16,7 +16,7 @@ depends: [
   "dune"  {>= "2.1"}
   "ocaml" {>= "4.08"}
   "lablgtk"
-  "apronext"
+  "apronext" {>= "1.0.1"}
   "apron"
 ]
 synopsis: "Abstract elements drawing library"

@@ -31,7 +31,7 @@ let add r (d: Drawable.t) =
             |> List.rev_map (fun g -> Generatorext.to_vertices3D_s g x y z)
           in
           pts::acc
-        else failwith (Format.asprintf "unbounded element %a\n%!" Apol.print pol)
+        else acc
       ) r.bounded3 d
   in
   {r with elems3 = Drawable.join d r.elems3; bounded3}

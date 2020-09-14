@@ -6,6 +6,7 @@ let set_output out =
   Texcanvas.output := Some fmt
 
 let output render filename =
+
   Texcanvas.init filename;
   List.iter (fun (c,_) -> ignore(Texcanvas.define_color c))
     Rendering.(render.elems);
