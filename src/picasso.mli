@@ -1,5 +1,12 @@
+(** Picasso is an Abstract element drawing library. It handles most of
+   the boilerplate you usually write to draw abstract elements and
+   allows you to view those.  *)
+
 (** module of drawable abstractions *)
 module Drawable : sig
+
+  (** {1 Types} *)
+
   (** the type of drawable abstractions  *)
   type t
 
@@ -37,7 +44,7 @@ module Drawable : sig
    not have the same length *)
   val of_ranges : string list -> range list -> t
 
-  (** {2 Operations }*)
+  (** {1 Operations }*)
 
   (** merges two drawable into one drawable*)
   val join : t -> t -> t
@@ -46,19 +53,36 @@ module Drawable : sig
   val bounds : var -> var -> t -> Apron.Interval.t * Apron.Interval.t
 end
 
-(** module for 2d drawing of abstract elements *)
+(** module for 2d drawing of abstract elements, handles the 'camera'
+   settings, 2D projection, and some graphical options *)
 module Rendering : sig
+  (** type of 2D scenes *)
   type t
+
+  (** colors are defined in RGB format *)
   type color = int * int * int
+
+  (** initalizes an empty 2d scenes. *)
   val create: ?title:string -> ?padding:float -> ?grid:bool -> ?axis:bool ->
               abciss:string -> ordinate:string -> float -> float -> t
+
+  (** registers an abstract element, associated to a color, into a scene *)
   val add : ?autofit:bool -> t -> color * Drawable.t -> t
+
+  (** camera settings *)
+  val translate : float * float -> t -> t
+  val scale : t -> float -> t
 end
 
-(** module for 3d model generation of abstract elements *)
+(** module for 3D model generation of abstract elements *)
 module Rendering3d : sig
+   (** type of 3D scenes *)
   type t
+
+  (** initalizes an empty 3D scenes. *)
   val create : abciss:string -> ordinate:string -> height:string -> unit -> t
+
+  (** registers an abstract element into a scene *)
   val add : t -> Drawable.t -> t
 end
 

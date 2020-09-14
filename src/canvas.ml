@@ -23,14 +23,14 @@ class canvas ~packing ~width ~height () =
           self#repaint())
         ~drag:
          (fun (a,b) (x,y) ->
-           render := Rendering.translate_scene (x -. a, y -. b) (!render);
+           render := Rendering.translate (x -. a, y -. b) (!render);
            self#repaint ();
          )
         ~scrollwheel:(fun direction ->
           render :=
             (match direction with
-             | `DOWN ->  Rendering.zoom_scene (!render)
-             | `UP ->  Rendering.unzoom_scene (!render)
+             | `DOWN ->  Rendering.zoom (!render)
+             | `UP ->  Rendering.unzoom (!render)
              | _ -> !render);
           self#repaint ())
       ()

@@ -70,7 +70,7 @@ let set_scene s x_min x_max y_min y_max =
    y_min = min y_min s.y_min;
    y_max = max y_max s.y_max}
 
-let translate_scene (x,y) a =
+let translate (x,y) a =
   let x = x /. (a.window.sx) in
   let y = y /. (a.window.sy) in
   let lx =  (a.scene.x_max -. a.scene.x_min) *. x in
@@ -83,7 +83,7 @@ let translate_scene (x,y) a =
     }
   }
 
-let scale_scene a alpha =
+let scale a alpha =
   let center_x = 0.5 *. (a.scene.x_max +. a.scene.x_min) in
   let center_y = 0.5 *. (a.scene.y_max +. a.scene.y_min) in
   let x_min = center_x +. (a.scene.x_min -. center_x) *. alpha in
@@ -92,9 +92,9 @@ let scale_scene a alpha =
   let y_max = center_y +. (a.scene.y_max -. center_y) *. alpha in
   {a with scene = {x_min; x_max; y_min; y_max}}
 
-let zoom_scene a = scale_scene a zo
+let zoom a = scale a zo
 
-let unzoom_scene a = scale_scene a (1./.zo)
+let unzoom a = scale a (1./.zo)
 
 let change_size_x x a = {a with window = {a.window with sx = x}}
 
