@@ -31,7 +31,17 @@ let of_ranges vars ranges =
   [Abox.of_box env (Array.map Apron.Var.of_string vars) itv
    |> Abox.to_poly]
 
-let join : t -> t -> t = List.rev_append
+let union : t -> t -> t = List.rev_append
+
+let product x y =
+  List.fold_left
+    (fun acc x ->
+      List.fold_left (fun acc y ->
+          let m = Apol.meet x y in
+          if Apol.is_bottom m then acc
+          else (m::acc)
+        ) acc y
+    ) [] x
 
 let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
   | [] -> invalid_arg "should be non empty"

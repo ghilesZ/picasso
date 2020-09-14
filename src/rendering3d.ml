@@ -34,4 +34,4 @@ let add r (d: Drawable.t) =
         else acc
       ) r.bounded3 d
   in
-  {r with elems3 = Drawable.join d r.elems3; bounded3}
+  {r with elems3 = Drawable.union d r.elems3; bounded3}

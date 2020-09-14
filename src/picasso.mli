@@ -2,6 +2,8 @@
    the boilerplate you usually write to draw abstract elements and
    allows you to view those.  *)
 
+open Apron
+
 (** module of drawable abstractions *)
 module Drawable : sig
 
@@ -10,28 +12,33 @@ module Drawable : sig
   (** the type of drawable abstractions  *)
   type t
 
+  (** drawing dimensions are given string identifiers *)
   type var = string
+
+  (** multi-dimensional points *)
   type point = float list
+
+  (** float ranges *)
   type range = float * float
 
   (** {1 Constructors} *)
 
-  (** drawable from an element of the Boxes abstract domain *)
-  val of_box : Apronext.Abox.t -> t
+  (** Drawable from an element of the Boxes abstract domain *)
+  val of_box : Box.t Abstract1.t -> t
 
-  (** drawable from an element of the Octagon abstract domain *)
-  val of_oct : Apronext.Aoct.t -> t
+  (** Drawable from an element of the Octagon abstract domain *)
+  val of_oct : Oct.t Abstract1.t -> t
 
-  (** drawable from an element of the Polyhedra abstract domain *)
-  val of_pol : Apronext.Apol.t -> t
+  (** Drawable from an element of the Polyhedra abstract domain *)
+  val of_pol : Polka.strict Polka.t Abstract1.t -> t
 
   (** Builds the drawable space corresponding to the polyhedra defined
    by the list of generators. *)
-  val of_gens : Apron.Generator1.t list -> t
+  val of_gens : Generator1.t list -> t
 
   (** Builds the drawable space corresponding to the polyhedra defined
    by the conjunction of a list of constraints. *)
-  val of_lcons : Apron.Lincons1.t list -> t
+  val of_lcons : Lincons1.t list -> t
 
   (** Same as of_gens, but build a convex hull from a list of a
    variables defining an environment and a list of points. Raises an
@@ -39,50 +46,58 @@ module Drawable : sig
    number of variables*)
   val of_hull : string list -> point list -> t
 
-  (** builds a drawable hypercube from a list of variable and a list of
+  (** Builds a drawable hypercube from a list of variable and a list of
    ranges. Raises an error if the range list and the variable list do
    not have the same length *)
   val of_ranges : string list -> range list -> t
 
-  (** {1 Operations }*)
+  (** {1 Operations } *)
 
-  (** merges two drawable into one drawable*)
-  val join : t -> t -> t
+  (** Merges two drawable into drawable, where the elements will be
+     drawn one after the other *)
+  val union : t -> t -> t
+
+  (** Merges two drawable into drawable, where only the intersection
+     of the elements will be drawn. *)
+  val product : t -> t -> t
 
   (** Computes the bounds of a variable within the elements of a drawable*)
-  val bounds : var -> var -> t -> Apron.Interval.t * Apron.Interval.t
+  val bounds : var -> var -> t -> Interval.t * Interval.t
 end
 
-(** module for 2d drawing of abstract elements, handles the 'camera'
+(** Module for 2d drawing of abstract elements, handles the 'camera'
    settings, 2D projection, and some graphical options *)
 module Rendering : sig
-  (** type of 2D scenes *)
+  (** Type of 2D scenes *)
   type t
 
-  (** colors are defined in RGB format *)
+  (** Colors are defined in RGB format *)
   type color = int * int * int
 
-  (** initalizes an empty 2d scenes. *)
+  (** Initalizes an empty 2d scenes. *)
   val create: ?title:string -> ?padding:float -> ?grid:bool -> ?axis:bool ->
               abciss:string -> ordinate:string -> float -> float -> t
 
-  (** registers an abstract element, associated to a color, into a scene *)
+  (** Registers an abstract element, associated to a color, into a
+     scene. Automatically changes the camera settings to encompass the
+     newly added abstract element. You can cancel this behaviour by
+     settings the optional argument [autofit] to [false]*)
   val add : ?autofit:bool -> t -> color * Drawable.t -> t
 
-  (** camera settings *)
+  (** Camera settings *)
   val translate : float * float -> t -> t
   val scale : t -> float -> t
 end
 
-(** module for 3D model generation of abstract elements *)
+(** Module for 3D model generation of abstract elements *)
 module Rendering3d : sig
-   (** type of 3D scenes *)
+   (** Type of 3D scenes *)
   type t
 
-  (** initalizes an empty 3D scenes. *)
+  (** Initalizes an empty 3D scenes. *)
   val create : abciss:string -> ordinate:string -> height:string -> unit -> t
 
-  (** registers an abstract element into a scene *)
+  (** Registers an abstract element into a scene *)
   val add : t -> Drawable.t -> t
 end
 

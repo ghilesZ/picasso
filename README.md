@@ -14,11 +14,11 @@ Picasso handles non-necessarily convex linear spaces of several
 dimensions, bounded or not. It provides utilities to draw abstract
 element of the [Apron library](https://github.com/antoinemine/apron)
 in a straightforward way, plus some other ways of defining drawable
-values (see the [Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Drawable/index.html)(module).
+values (see the [Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Drawable/index.html)module).
 
 ## Different backends
 Picasso features different ways of visualizing abstract elements:
 - interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window (scrollable, zoomable) 
 - LaTex generation
-- 3D .obj file generation
+- 3D .obj file generation (you can use [g3dviewer](http://automagically.de/g3dviewer/), among others, to visualize the 3d model)
 <!-- - Non-interractive [graphics](https://github.com/ocaml/graphics) window (todo) -->
