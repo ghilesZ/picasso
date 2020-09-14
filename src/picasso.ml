@@ -12,6 +12,9 @@ let in_gtk_canvas render =
 
 (* let in_js_canvas _render = () *)
 
+let set_tikz_only (b: bool) =
+  Texcanvas.tikz_only := b
+
 (** Builds a tikz figure corresponding to a Rendering.t  *)
 let to_latex render output = Tex.output render output
 

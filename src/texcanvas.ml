@@ -1,5 +1,7 @@
 (* this module handles the latex generation *)
 
+let tikz_only = ref true
+
 type internal = string (* output file *)
 
 let output = ref None
@@ -18,27 +20,52 @@ let emit s = Format.fprintf (get_output ()) s
 
 let name = Format.asprintf "col_%i_%i_%i"
 
-let init out =
+let header out =
+  set_output out;
+  emit "\\usepackage{tikz}\n\n";
+  emit "\\begin{tikzpicture}\n";
+  emit "\\def\\sx{1}\n";
+  emit "\\def\\sy{1}\n";
+  emit "\\definecolor{%s}{RGB}{%i,%i,%i}\n" (name 0 0 0) 0 0 0
+
+let footer () =
+  emit "\\end{tikzpicture}\n%!"
+
+let header_full out =
   set_output out;
   emit "\\documentclass{article}\n\\usepackage{fullpage}\n\\usepackage{tikz}\n\n";
   emit "\\begin{document}\n\n\\centering\n\n";
   emit "\\begin{figure}[t]\n\\centering\n\\begin{tikzpicture}\n";
+  emit "\\def\\sx{1}\n";
+  emit "\\def\\sy{1}\n";
   emit "\\definecolor{%s}{RGB}{%i,%i,%i}\n" (name 0 0 0) 0 0 0
 
-let ending () =
+let footer_full () =
   emit "\\end{tikzpicture}\n\\end{figure}\n%!";
   emit "\\end{document}\n%!"
 
-let width = ref 0.
-let height = ref 0.
+let init f =
+  if !tikz_only then
+    header f
+  else
+    header_full f
 
-let normalize (x_min,x_max) (y_min,y_max) (x,y) =
-  let x = Tools.projection (x_min,x_max) (0.,!width) x in
-  let y = Tools.projection (y_min,y_max) (0.,!height) y in
-  x,y
+let ending () =
+  if !tikz_only then
+    footer ()
+  else
+    footer_full ()
 
-let width () = int_of_float !width
-let height () = int_of_float !height
+let normalize (x_min, x_max) (y_min, y_max) (x, y) =
+  let a, b = x , y in
+  let x = Tools.projection (x_min,x_max) (0.,1.) x in
+  let y = Tools.projection (y_min,y_max) (0.,1.) y in
+  Format.printf "%f in (%f, %f) ~> %f\n%!" a x_min x_max x;
+  Format.printf "%f in (%f, %f) ~> %f\n%!" b x_min x_max y;
+  x, y
+
+let width () = int_of_float 1.
+let height () = int_of_float 1.
 
 type color = int * int * int
 let rgb r g b : color = (r,g,b)
@@ -62,15 +89,15 @@ let draw_text c p (x,y) text =
     | `Left | `Right -> failwith "draw text left right not implemented"
   in
   let c = define_color c in
-  emit "\\node[align=%s,text=%s,font=\\tiny] at (%f,%f) { %s };\n" p c x y text
+  emit "\\node[align=%s,text=%s,font=\\tiny] at (%f*\\sx, %f*\\sy) { %s };\n" p c x y text
 
 let draw_line col (x1,y1) (x2,y2) =
   let col = define_color col in
-  emit "\\draw[%s] (%f,%f) -- (%f,%f);\n" col x1 y1 x2 y2
+  emit "\\draw[%s] (%f*\\sx,%f*\\sy) -- (%f*\\sx, %f*\\sy);\n" col x1 y1 x2 y2
 
 let circle filldraw (col:color) (x,y) rad =
   let col = define_color col in
-  emit "\\%s[%s] (%f,%f) circle (%f);\n" filldraw col x y rad
+  emit "\\%s[%s] (%f*\\sx, %f*\\sy) circle (%f);\n" filldraw col x y rad
 
 let fill_circle = circle "fill"
 
@@ -79,7 +106,7 @@ let draw_circle = circle "draw"
 let poly filldraw col vertices =
   let col = define_color col in
   emit "\\%s[%s] " filldraw col;
-	List.iter (fun (x,y) -> emit "(%f, %f) -- " x y) vertices;
+	List.iter (fun (x,y) -> emit "(%f*\\sx, %f*\\sy) -- " x y) vertices;
   emit "cycle;@."
 
 let fill_poly = poly "fill"
