@@ -1,7 +1,7 @@
 (** module of drawable abstractions *)
 module Drawable : sig
   (** the type of drawable abstractions  *)
-  type t = Apronext.Apol.t list
+  type t
 
   type var = string
   type point = float list
