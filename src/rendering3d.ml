@@ -3,16 +3,16 @@ open Geometry
 
 type t = {
     (* content *)
-    elems3     :  Apol.t list;
+    elems3     :  Drawable.t;
     (* projection variables *)
-    abciss3    : string option;
-    ordinate3  : string option;
-    height3    : string option;
+    abciss3    : string;
+    ordinate3  : string;
+    height3    : string;
     (* elems projected on the projection variables.*)
     bounded3   : vertex3d list;
   }
 
-let create ?abciss ?ordinate ?height () = {
+let create ~abciss ~ordinate ~height () = {
     elems3 = [];
     abciss3=abciss;
     ordinate3=ordinate;
@@ -20,24 +20,18 @@ let create ?abciss ?ordinate ?height () = {
     bounded3 = [];
   }
 
-let add r (x: Drawable.t) = {
-    r with elems3 = Drawable.join x r.elems3
-  }
-
-(* changes the projection variables. if those are different from the
-   previous ones we convert bounded elements to 3d points list *)
-let set_proj_vars r v1 v2 v3 =
-  match r.abciss3, r.ordinate3, r.height3 with
-  | Some x, Some y, Some z when x=v1 && y = v2 && z=v3 -> r
-  | _ ->
-     let bounded3 =
-       List.fold_left (fun acc pol ->
-           let p3d = Apol.proj3D_s pol v1 v2 v3 in
-           if Apol.is_bounded p3d then
-             let gen' = Apol.to_generator_list p3d in
-             let pts = List.rev_map (fun g -> Generatorext.to_vertices3D_s g v1 v2 v3) gen' in
-             pts::acc
-           else failwith "unbounded element for obj generation"
-         ) [] r.elems3
-     in
-     {r with abciss3 = Some v1; ordinate3 = Some v2; height3=Some v3; bounded3}
+let add r (d: Drawable.t) =
+  let x,y,z= r.abciss3, r.ordinate3, r.height3 in
+  let bounded3 =
+    List.fold_left (fun acc pol ->
+        let p3d = Apol.proj3D_s pol x y z in
+        if Apol.is_bounded p3d then
+          let pts =
+            Apol.to_generator_list p3d
+            |> List.rev_map (fun g -> Generatorext.to_vertices3D_s g x y z)
+          in
+          pts::acc
+        else failwith (Format.asprintf "unbounded element %a\n%!" Apol.print pol)
+      ) r.bounded3 d
+  in
+  {r with elems3 = Drawable.join d r.elems3; bounded3}
