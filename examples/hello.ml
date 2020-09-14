@@ -10,7 +10,6 @@ let polyhedron =
   Apol.of_generator_list env [g1;g2;g3;g4] |> Drawable.of_pol
 
 let _ =
-  set_tikz_only false;
   let r = Rendering.create ~abciss:"z" ~ordinate:"x" ~title:"Test" 800. 800. in
   let r = Rendering.add r ((150,150,150), polyhedron) in
   to_latex r "file.tex";
