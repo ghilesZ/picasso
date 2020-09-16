@@ -4,6 +4,21 @@
 
 open Apron
 
+(** Colors handling *)
+module Colors : sig
+
+  (** *type of colors, using rgb format *)
+  type t = int * int * int
+
+  (** main constructor *)
+  val rgb : int -> int -> int -> t
+
+  (** {1 Predefined colors} *)
+  val red : t
+  val green : t
+  val blue : t
+end
+
 (** Module of drawable abstractions *)
 module Drawable : sig
 
@@ -53,16 +68,13 @@ module Drawable : sig
 
   (** {1 Operations } *)
 
-  (** Merges two drawable into drawable, where the elements will be
-     drawn one after the other *)
+  (** Merges two drawable into one drawable, where the elements will
+     be drawn one after the other *)
   val union : t -> t -> t
 
-  (** Merges two drawable into drawable, where only the intersection
-     of the elements will be drawn. *)
+  (** Merges two drawable into one drawable, where only the
+     intersection of the elements will be drawn. *)
   val product : t -> t -> t
-
-  (** Computes the bounds of a variable within the elements of a drawable*)
-  val bounds : var -> var -> t -> Interval.t * Interval.t
 end
 
 (** Module for 2d drawing of abstract elements, handles the 'camera'
@@ -70,9 +82,6 @@ end
 module Rendering : sig
   (** Type of 2D scenes *)
   type t
-
-  (** Colors are defined in RGB format *)
-  type color = int * int * int
 
   (** Initalizes an empty 2d scenes. *)
   val create: ?title:string -> ?padding:float -> ?grid:bool -> ?axis:bool ->
@@ -82,7 +91,7 @@ module Rendering : sig
      scene. Automatically changes the camera settings to encompass the
      newly added abstract element. You can cancel this behaviour by
      settings the optional argument [autofit] to [false]*)
-  val add : ?autofit:bool -> t -> color * Drawable.t -> t
+  val add : ?autofit:bool -> t -> Colors.t * Drawable.t -> t
 
   (** Camera settings *)
   val translate : float * float -> t -> t

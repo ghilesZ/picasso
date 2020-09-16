@@ -57,11 +57,8 @@ let ending () =
     footer_full ()
 
 let normalize (x_min, x_max) (y_min, y_max) (x, y) =
-  let a, b = x , y in
   let x = Tools.projection (x_min,x_max) (0.,1.) x in
   let y = Tools.projection (y_min,y_max) (0.,1.) y in
-  Format.printf "%f in (%f, %f) ~> %f\n%!" a x_min x_max x;
-  Format.printf "%f in (%f, %f) ~> %f\n%!" b x_min x_max y;
   x, y
 
 let width () = int_of_float 1.

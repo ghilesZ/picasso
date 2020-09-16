@@ -1,3 +1,5 @@
+module Colors = Colors
+
 module Rendering = Rendering
 
 module Rendering3d = Rendering3d
