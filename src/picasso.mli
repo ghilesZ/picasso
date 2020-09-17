@@ -59,13 +59,13 @@ module Drawable : sig
 
   (** Same as of_gens, but build a convex hull from a list of a
      variables defining an environment and a list of points.
-     @raise an error if one points or more do not have as many dimension as
+     @raise Invalid_arg if one points or more do not have as many dimension as
      the number of variables*)
   val of_hull : string list -> point list -> t
 
   (** Builds a drawable hypercube from a list of variable and a list
      of ranges.
-     @raise an error if the range list and the variable list do not have
+     @raise Invalid_arg if the range list and the variable list do not have
      the same length *)
   val of_ranges : string list -> range list -> t
 
