@@ -26,9 +26,6 @@ module Make(D:Backend.T) = struct
   let white     = D.rgb 255 255 255
   let lightgray = D.rgb 230 230 230
   let gray      = D.rgb 128 128 128
-  let blue      = D.rgb 0 0 255
-  let red       = D.rgb 255 0 0
-  let green     = D.rgb 0 255 0
 
   (********************************)
   (* redefining drawing utilities *)

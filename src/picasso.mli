@@ -17,6 +17,8 @@ module Colors : sig
   val red : t
   val green : t
   val blue : t
+  val white : t
+  val black : t
 end
 
 (** Module of drawable abstractions *)
