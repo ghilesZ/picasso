@@ -124,5 +124,9 @@ val in_gtk_canvas : Rendering.t -> unit
    figure *)
 val to_latex : ?tikz_only:bool -> Rendering.t -> string -> unit
 
-(** Builds an obj file rorresponding to a Rendering3D context *)
+(** Outputs a svg file with a figure corresponding to a
+   Rendering.t *)
+val to_svg : Rendering.t -> string -> unit
+
+(** Builds an obj file corresponding to a Rendering3D context *)
 val to_obj : Rendering3d.t -> string -> unit
