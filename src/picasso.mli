@@ -96,6 +96,10 @@ module Rendering : sig
      settings the optional argument [autofit] to [false]*)
   val add : ?autofit:bool -> t -> Colors.t * Drawable.t -> t
 
+  (** 'add_l r l' is equivalent to calling 'add' successively on the
+     elements of the list 'l' *)
+  val add_l : ?autofit:bool -> t -> (Colors.t * Drawable.t) list -> t
+
   (** Camera settings *)
   val translate : float * float -> t -> t
   val scale : t -> float -> t
@@ -111,6 +115,10 @@ module Rendering3d : sig
 
   (** Registers an abstract element into a scene *)
   val add : t -> Drawable.t -> t
+
+  (** 'add_l r l' is equivalent to calling 'add' successively on the
+     elements of the list 'l' *)
+  val add_l : t -> Drawable.t list -> t
 end
 
 (** {1 Drawing utilities} *)

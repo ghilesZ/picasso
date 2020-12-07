@@ -35,3 +35,5 @@ let add r (d: Drawable.t) =
       ) r.bounded3 d
   in
   {r with elems3 = Drawable.union d r.elems3; bounded3}
+
+let add_l = List.fold_left add

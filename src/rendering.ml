@@ -111,6 +111,9 @@ let add ?autofit:(auto=true) r ((c,x): color*Drawable.t) =
     {r with scene = set_scene r.scene l1 u1 l2 u2}
   else r
 
+let add_l ?autofit:(auto=true) r drawables =
+  List.fold_left (add ~autofit:auto) r drawables
+
 (* given a window and a scene, returns a function that maps an
    abstract coordinate to a point of the scene to the window *)
 let normalize u =

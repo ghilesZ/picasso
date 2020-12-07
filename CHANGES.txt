@@ -1,0 +1,5 @@
+- add SVG backend
+- add 'add_l' functions into rendering modules
+- minor fixes
+
+on 17 Sep 2020 v0.1 first release
