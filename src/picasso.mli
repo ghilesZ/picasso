@@ -1,6 +1,6 @@
 (** Picasso is an Abstract element drawing library. It handles most of
    the boilerplate you usually write to draw abstract elements and
-   allows you to view those.  *)
+   allows you to view those. *)
 
 open Apron
 

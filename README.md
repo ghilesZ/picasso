@@ -9,12 +9,13 @@ allows you to view those with minimum effort from your end.
 ### Documentation
 you can build it locally by doing ``make doc`` or consult the online [documentation](https://ghilesz.github.io/picasso/picasso/index.html)
 
-## Different Abstract Domains
-Picasso handles non-necessarily convex linear spaces of several
-dimensions, bounded or not. It provides utilities to draw abstract
-element of the [Apron library](https://github.com/antoinemine/apron)
-in a straightforward way, plus some other ways of defining drawable
-values (see the [Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Drawable/index.html)module).
+## Different Abstract Domains Picasso handles non-necessarily convex
+linear spaces of several dimensions, bounded or not. It provides
+utilities to draw abstract element of the [Apron
+library](https://github.com/antoinemine/apron) in a straightforward
+way, plus some other ways of defining drawable values (see the
+[Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Drawable/index.html)
+module).
 
 ## Different backends
 Picasso features different ways of visualizing abstract elements:
