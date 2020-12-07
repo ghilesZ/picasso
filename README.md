@@ -19,6 +19,7 @@ values (see the [Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Dra
 ## Different backends
 Picasso features different ways of visualizing abstract elements:
 - interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window (scrollable, zoomable) 
-- LaTex generation
+- SVG generation
+- LaTex generation (using TikZ)
 - 3D .obj file generation (you can use [g3dviewer](http://automagically.de/g3dviewer/), among others, to visualize the 3d model)
 <!-- - Non-interractive [graphics](https://github.com/ocaml/graphics) window (todo) -->

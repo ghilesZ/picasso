@@ -23,7 +23,9 @@ let _ =
   let r = Rendering.add r ((200,50,50), octagon) in
   to_svg r "file.svg";
   to_svg r "file.txt";
-  (* let r3 = Rendering3d.create ~abciss:"x" ~ordinate:"y" ~height:"z" () in
-   * let r3 = Rendering3d.add r3 polyhedron in
-   * to_obj r3 "file.obj"; *)
+  to_latex ~tikz_only:false r "file.tex";
+  let r3 = Rendering3d.create ~abciss:"x" ~ordinate:"y" ~height:"z" () in
+  let r3 = Rendering3d.add r3 polyhedron in
+  let r3 = Rendering3d.add r3 octagon in
+  to_obj r3 "file.obj";
   in_gtk_canvas r

@@ -69,8 +69,8 @@ let normalize (x_min, x_max) (y_min, y_max) (x, y) =
   let y = Tools.projection (y_min,y_max) (0.,1.) y in
   x, y
 
-let width () = int_of_float 1.
-let height () = int_of_float 1.
+let width () = 1
+let height () = 1
 
 type color = int * int * int
 let rgb r g b : color = (r,g,b)

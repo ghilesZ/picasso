@@ -48,23 +48,17 @@ module Make(D:Backend.T) = struct
     let rad = px' -. px in
     D.fill_circle col p rad
 
-  let fill_poly col vertices =
+  let poly f col vertices =
     match vertices with
     | [] -> ()
     | [x] -> fill_circle col x 2.
     | [(xa,ya);(xb,yb)] -> draw_line col (xa,ya) (xb,yb)
     | _ ->
        let vertices = List.rev_map to_backend_coord vertices in
-       D.fill_poly col vertices
+       f col vertices
 
-  let draw_poly col vertices =
-    match vertices with
-    | [] -> ()
-    | [x] ->  fill_circle col x 8.
-    | [a;b] -> draw_line col a b
-    | _ ->
-       let vertices = List.rev_map to_backend_coord vertices in
-       D.draw_poly col vertices
+  let draw_poly = poly D.draw_poly
+  let fill_poly = poly D.fill_poly
 
    (* Filled, black-outlined polygon *)
   let polygon col vertices =
@@ -143,12 +137,6 @@ module Make(D:Backend.T) = struct
       draw_line gray (vx-.minibar_size, y) ((vx+.minibar_size), y);
     in
     graduation 0.5 fx fy render;
-    (* erasing what is in the margin *)
-    let rwp = render.window.padding in
-    fill_poly white (square (0.,0.) (width(),rwp));
-    fill_poly white (square (0.,0.) (rwp,height()));
-    fill_poly white (square (0.,height()) (width(),height()-.rwp));
-    fill_poly white (square (width()-.rwp,height()) (width(),0.));
     (* vetrtical coordinates *)
     let fx =
       let flag = ref 0 in

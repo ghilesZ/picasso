@@ -107,7 +107,7 @@ let add ?autofit:(auto=true) r ((c,x): color*Drawable.t) =
   if auto then
     let i1,i2 = Drawable.bounds r.abciss r.ordinate x in
     let (l1,u1),(l2,u2) = Intervalext.to_float i1,Intervalext.to_float i2 in
-    (* Format.printf "%f %f %f %f\n%!" l1 u1 l2 u2; *)
+    Format.printf "%f %f %f %f\n%!" l1 u1 l2 u2;
     {r with scene = set_scene r.scene l1 u1 l2 u2}
   else r
 

@@ -6,6 +6,8 @@ let set_output out =
   Svgcanvas.output := Some fmt
 
 let output render filename =
-  Svgcanvas.init filename;
+  let open Rendering in
+  Svgcanvas.init render.window.sx render.window.sy filename;
+  fill_poly white (screen());
   draw render;
   Svgcanvas.ending()
