@@ -23,6 +23,8 @@ module Make (D : Backend.T) = struct
 
   let white = D.rgb 255 255 255
 
+  let darkgray = D.rgb 64 64 64
+
   let lightgray = D.rgb 230 230 230
 
   let gray = D.rgb 128 128 128
@@ -64,16 +66,37 @@ module Make (D : Backend.T) = struct
   let polygon col vertices =
     fill_poly col vertices ; draw_poly black vertices
 
+  let xline r cur =
+    let open Rendering in
+    let up = r.scene.y_max and down = r.scene.y_min in
+    let p1 = normalize r (cur, down) and p2 = normalize r (cur, up) in
+    draw_line lightgray p1 p2
+
+  let yline r cur =
+    let open Rendering in
+    let left = r.scene.x_min and right = r.scene.x_max in
+    let p1 = normalize r (left, cur) and p2 = normalize r (right, cur) in
+    draw_line lightgray p1 p2
+
+  let draw_grid render =
+    let open Rendering in
+    let sx = render.scene.x_max -. render.scene.x_min in
+    let sy = render.scene.y_max -. render.scene.y_min in
+    let xl10 = 10. ** (log10 sx -. 1.) in
+    let yl10 = 10. ** (log10 sy -. 1.) in
+    let min_x = floor (render.scene.x_min /. xl10) *. xl10 in
+    let min_y = render.scene.y_min /. yl10 in
+    Tools.iterate (xline render) min_x (( +. ) xl10)
+      (( < ) render.scene.x_max) ;
+    Tools.iterate (yline render) min_y (( +. ) yl10)
+      (( < ) render.scene.y_max)
+
   let graduation rating fx fy render =
     let stepify dim =
       (* TODO:less hardcode *)
-      let helper_1_2_5 c =
-        if c < 1.5 then 1. else if c < 3.5 then 2. else 5.
-      in
       let step = dim /. 10. in
       let exp = log10 step |> ceil in
       let c = step /. (10. ** exp) in
-      let c = helper_1_2_5 c in
       c *. (10. ** exp) *. rating
     in
     let open Rendering in
@@ -92,37 +115,21 @@ module Make (D : Backend.T) = struct
     iterate fx step_w left right ;
     iterate fy step_h down up
 
-  let draw_grid render =
-    let open Rendering in
-    let left = render.scene.x_min and right = render.scene.x_max in
-    let up = render.scene.y_max and down = render.scene.y_min in
-    let fx cur =
-      let p1 = normalize render (cur, down)
-      and p2 = normalize render (cur, up) in
-      draw_line lightgray p1 p2
-    in
-    let fy cur =
-      let p1 = normalize render (left, cur)
-      and p2 = normalize render (right, cur) in
-      draw_line lightgray p1 p2
-    in
-    graduation 1. fx fy render
-
   let draw_axes render =
     let open Rendering in
     let pad = 30. in
     let x0, y0 = (0., 0.) in
     let left = render.scene.x_min and right = render.scene.x_max in
     let up = render.scene.y_max and down = render.scene.y_min in
-    let hx, hy = Rendering.normalize render (left, y0)
-    and hx', hy' = Rendering.normalize render (right, y0) in
+    let hx, hy = normalize render (left, y0)
+    and hx', hy' = normalize render (right, y0) in
     let th = 2. in
     let thick_line =
       [(hx, hy +. th); (hx, hy -. th); (hx', hy' -. th); (hx', hy' +. th)]
     in
     fill_poly gray (List.rev_map (fun (x, y) -> (x, y)) thick_line) ;
-    let vx, vy = Rendering.normalize render (x0, down)
-    and vx', vy' = Rendering.normalize render (x0, up) in
+    let vx, vy = normalize render (x0, down)
+    and vx', vy' = normalize render (x0, up) in
     let thick_line =
       [(vx +. th, vy); (vx -. th, vy); (vx' -. th, vy'); (vx' +. th, vy')]
     in
@@ -141,18 +148,18 @@ module Make (D : Backend.T) = struct
     let fx =
       let flag = ref 0 in
       fun cur ->
-        let text = Format.asprintf "%.1f" cur in
+        let text = Format.asprintf "%a" Tools.pp_float cur in
         let x, _ = normalize render (cur, down) in
-        if !flag mod 4 = 0 then draw_text gray `Center (x, pad) text ;
+        if !flag mod 4 = 0 then draw_text darkgray `Center (x, pad) text ;
         incr flag
     in
     (* hozizontal coordinates *)
     let fy =
       let flag = ref 0 in
       fun cur ->
-        let text = Format.asprintf "%.1f" cur in
+        let text = Format.asprintf "%a" Tools.pp_float cur in
         let _, y = normalize render (left, cur) in
-        if !flag mod 2 = 0 then draw_text gray `Center (pad, y) text ;
+        if !flag mod 2 = 0 then draw_text darkgray `Center (pad, y) text ;
         incr flag
     in
     graduation 0.5 fx fy render
