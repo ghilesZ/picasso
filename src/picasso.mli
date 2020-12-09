@@ -112,10 +112,13 @@ module Rendering : sig
   (** Registers a list of element into a scene. [add_l r l] is equivalent to
       calling [add] successively on the elements of [l] *)
 
+  (** {1 Camera settings} *)
+
   val translate : float * float -> t -> t
-  (** Camera settings *)
+  (** translation of the whole scene *)
 
   val scale : t -> float -> t
+  (** zoom / unzoom *)
 end
 
 (** Module for 3D model generation of abstract elements *)
