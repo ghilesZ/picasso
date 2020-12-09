@@ -85,7 +85,7 @@ module Make (D : Backend.T) = struct
     let xl10 = 10. ** (log10 sx -. 1.) in
     let yl10 = 10. ** (log10 sy -. 1.) in
     let min_x = floor (render.scene.x_min /. xl10) *. xl10 in
-    let min_y = render.scene.y_min /. yl10 in
+    let min_y = floor (render.scene.y_min /. yl10) *. yl10 in
     Tools.iterate (xline render) min_x (( +. ) xl10)
       (( < ) render.scene.x_max) ;
     Tools.iterate (yline render) min_y (( +. ) yl10)
