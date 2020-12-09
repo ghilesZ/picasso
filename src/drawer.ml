@@ -112,8 +112,8 @@ module Make (D : Backend.T) = struct
       in
       loop ((min /. step |> ceil) *. step)
     in
-    iterate fx step_w left right ;
-    iterate fy step_h down up
+    Tools.iterate fx left (( +. ) step_w) (( < ) right) ;
+    Tools.iterate fy down (( +. ) step_h) (( < ) up)
 
   let draw_axes render =
     let open Rendering in
