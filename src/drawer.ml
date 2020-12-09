@@ -104,14 +104,6 @@ module Make (D : Backend.T) = struct
     let down = render.scene.y_min and up = render.scene.y_max in
     let step_w = stepify (right -. left) in
     let step_h = stepify (up -. down) in
-    let iterate f step min max =
-      let rec loop cur =
-        if cur < max then (
-          f cur ;
-          loop (cur +. step) )
-      in
-      loop ((min /. step |> ceil) *. step)
-    in
     Tools.iterate fx left (( +. ) step_w) (( < ) right) ;
     Tools.iterate fy down (( +. ) step_h) (( < ) up)
 
