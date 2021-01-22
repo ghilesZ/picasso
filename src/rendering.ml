@@ -154,8 +154,7 @@ let abstract_screen r =
   let to_gens (x, y) = Generatorext.of_float_point scenv [x; y] in
   [(0., 0.); (r.window.sx, 0.); (r.window.sx, r.window.sy); (0., r.window.sy)]
   |> List.rev_map (denormalize r)
-  |> List.rev_map to_gens
-  |> Apol.of_generator_list scenv
+  |> List.rev_map to_gens |> Apol.of_generator_list
 
 let to_vertices r =
   let norm = normalize r in
