@@ -15,9 +15,9 @@ build: [
 depends: [
   "dune"  {>= "2.1"}
   "ocaml" {>= "4.08"}
-  "lablgtk"
   "apronext" {>= "1.0.3"}
   "apron"
 ]
+depopts: ["lablgtk"]
 synopsis: "Abstract elements drawing library"
 description: "A toolbox for drawing abstract elements"

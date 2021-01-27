@@ -9,7 +9,7 @@ let gens =
    Generatorext.of_float_point env [50.;200.;100.] ;
    Generatorext.of_float_point env [100.;0.;150.]]
 
-let polyhedron = Apol.of_generator_list env gens |> Drawable.of_pol
+let polyhedron = Apol.of_generator_list gens |> Drawable.of_pol
 let octagon = Aoct.of_generator_list env gens |> Drawable.of_oct
 
 let _ =

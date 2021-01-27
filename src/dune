@@ -3,5 +3,7 @@
 (library
   (public_name picasso)
   (name picasso)
-  (libraries lablgtk2 apron apronext)
+  (libraries apron apronext (select canvas.ml from
+                   (lablgtk2  -> backends/gtk/canvas.ok.ml)
+                   (!lablgtk2 -> backends/gtk/canvas.ko.ml)))
 )
