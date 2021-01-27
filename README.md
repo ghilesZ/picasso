@@ -2,7 +2,7 @@
 Picasso is an Abstract element drawing library which provides several
 ways of drawing abstract element.
 
-Visualization of abstract element poses two practical be annoying:
+Visualization of abstract element poses two practical problems:
 - abstract elements may be unbounded, are generally defined on more than 2 dimensions, thus rendering them in a 2d context can be difficult.
 - managing graphical libraries can be really painful (especially in OCaml) and requires unnecessary efforts.
 
