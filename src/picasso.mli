@@ -137,10 +137,27 @@ module Rendering3d : sig
       calling [add] successively on the elements of [l] *)
 end
 
+(** raised by rendering function when a backend is not installed or when an
+    internal error occurs *)
+exception BackendError of string
+
 (** {1 Drawing utilities} *)
 
 val in_gtk_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a scrollable, zoomable gtk canvas *)
+(** Displays a Rendering.t within a scrollable, zoomable gtk canvas.
+
+    @raise BackendError if the library lablgtk is not installed *)
+
+val in_graphics_canvas : Rendering.t -> unit
+(** Displays a Rendering.t within a graphics window.
+
+    @raise BackendError if the library graphics is not installed *)
+
+val show : Rendering.t -> unit
+(** Displays a Rendering.t using in_gtk_canvas, and if lablgtk is not
+    installed, retries using in_graphics_canvas.
+
+    @raise BackendError If none of the backeds are installed *)
 
 val to_latex : ?tikz_only:bool -> Rendering.t -> string -> unit
 (** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If

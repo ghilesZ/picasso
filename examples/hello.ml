@@ -20,4 +20,4 @@ let _ =
   let r3 = Rendering3d.create ~abciss:"x" ~ordinate:"y" ~height:"z" () in
   let r3 = Rendering3d.add_l r3 [polyhedron; octagon] in
   to_obj r3 "file.obj";
-  in_gtk_canvas r
+  show r
