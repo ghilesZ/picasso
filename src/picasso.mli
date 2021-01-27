@@ -149,13 +149,15 @@ val in_gtk_canvas : Rendering.t -> unit
     @raise BackendError if the library lablgtk is not installed *)
 
 val in_graphics_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a graphics window.
+(** Displays a Rendering.t within a graphics window. The window created can
+    be exited cleanly by pressing any key.
 
     @raise BackendError if the library graphics is not installed *)
 
 val show : Rendering.t -> unit
-(** Displays a Rendering.t using in_gtk_canvas, and if lablgtk is not
-    installed, retries using in_graphics_canvas.
+(** Displays a Rendering.t using one of the backend available. It first tries
+    with in_gtk_canvas, and if lablgtk is not installed, retries using
+    in_graphics_canvas.
 
     @raise BackendError If none of the backeds are installed *)
 

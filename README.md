@@ -18,10 +18,16 @@ values (see the
 [Drawable](https://ghilesz.github.io/picasso/picasso/Picasso/Drawable/index.html)
 module).
 
-## Different backends
-Picasso features different ways of visualizing abstract elements:
-- interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window (scrollable, zoomable) 
+## Dependencies and build
+Picasso can use different graphical library without imposing heavy
+dependencies for the end-user. It uses the opam optional dependency
+feature, along with dune's select stanza, to look for available
+graphical library on your system to use those. Also note that using
+opam, while installing a new graphical package, picasso will be
+recompiled automatically make the new library usable.
+
+## Possible backends:
+- interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window (scrollable, zoomable)
 - SVG generation
-- LaTex generation (using TikZ)
-- 3D .obj file generation (you can use [g3dviewer](http://automagically.de/g3dviewer/), among others, to visualize the 3d model)
-<!-- - Non-interractive [graphics](https://github.com/ocaml/graphics) window (todo) -->
+- LaTex generation (using TikZ) - 3D .obj file generation (you can use [g3dviewer](http://automagically.de/g3dviewer/), among others, to visualize the 3d model)
+- Non-interractive [graphics](https://github.com/ocaml/graphics) window
