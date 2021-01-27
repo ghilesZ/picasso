@@ -143,21 +143,10 @@ exception BackendError of string
 
 (** {1 Drawing utilities} *)
 
-val in_gtk_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a scrollable, zoomable gtk canvas.
-
-    @raise BackendError if the library lablgtk is not installed *)
-
-val in_graphics_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a graphics window. The window created can
-    be exited cleanly by pressing any key.
-
-    @raise BackendError if the library graphics is not installed *)
-
 val show : Rendering.t -> unit
-(** Displays a Rendering.t using one of the backend available. It first tries
-    with in_gtk_canvas, and if lablgtk is not installed, retries using
-    in_graphics_canvas.
+(** Main drawing function. Displays a Rendering.t using one of the backend
+    available. It first tries with in_gtk_canvas, and if lablgtk is not
+    installed, retries using in_graphics_canvas.
 
     @raise BackendError If none of the backeds are installed *)
 
@@ -171,3 +160,16 @@ val to_svg : Rendering.t -> string -> unit
 
 val to_obj : Rendering3d.t -> string -> unit
 (** Builds an obj file corresponding to a Rendering3D context *)
+
+(** {2 Backend specific drawing functions}*)
+
+val in_gtk_canvas : Rendering.t -> unit
+(** Displays a Rendering.t within a scrollable, zoomable gtk canvas.
+
+    @raise BackendError if the library lablgtk is not installed *)
+
+val in_graphics_canvas : Rendering.t -> unit
+(** Displays a Rendering.t within a graphics window. The window created can
+    be exited cleanly by pressing any key.
+
+    @raise BackendError if the library graphics is not installed *)
