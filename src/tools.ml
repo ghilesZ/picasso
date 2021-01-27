@@ -1,22 +1,18 @@
+exception BackendError of string
+
 let foi = float_of_int
 
 let iof = int_of_float
 
-(** Reverses a string. eg, "kayak" becomes "kayak" *)
-let string_rev s =
-  let len = String.length s in
-  String.init len (fun i -> s.[len - 1 - i])
-
-(** removes beginning zeros of a string *)
-let trail_beginning_zeros str =
-  let cpt = ref 0 in
-  ( try String.iter (function '0' -> incr cpt | _ -> raise Exit) str
-    with Exit -> () ) ;
-  String.sub str !cpt (String.length str - !cpt)
-
 (** removes ending zeros of a string *)
 let trail_ending_zeros str =
-  str |> string_rev |> trail_beginning_zeros |> string_rev
+  let len = String.length str in
+  let rec aux cpt i =
+    if i >= len then len
+    else aux (if str.[len - i - 1] = '0' then cpt + 1 else cpt) (i + 1)
+  in
+  let nb_end_zero = aux 0 0 in
+  String.sub str 0 (len - nb_end_zero)
 
 let pp_float fmt f =
   let i_c = iof (ceil f) in
