@@ -11,6 +11,38 @@ let zo = 2.
 
 type color = int * int * int
 
+(* type elem =
+ *   { elem: Apol.t
+ *   ; col: color
+ *   ; is_bounded: bool
+ *         (\* to avoid recomputing the projections of a given element on a pair
+ *            of variable *\)
+ *   ; projs: (string * string, proj) Hashtbl.t }
+ *
+ * and proj = Apol.t
+ *
+ * let make_elem elem col =
+ *   {elem; col; is_bounded= Apol.is_bounded elem; projs= Hashtbl.create 10}
+ *
+ * let project elem v1 v2 =
+ *   try Hashtbl.find elem.projs (v1, v2)
+ *   with Not_found ->
+ *     let p2d = Apol.proj2D_s elem.elem v1 v2 in
+ *     Hashtbl.add elem.projs (v1, v2) p2d ;
+ *     p2d
+ *
+ * type t =
+ *   { window: window_settings
+ *   ; scene: scene_settings
+ *   ; (\* graphical options *\)
+ *     grid: bool
+ *   ; axis: bool
+ *   ; (\* content *\)
+ *     elems: elem list
+ *   ; (\* projection variables *\)
+ *     abciss: string
+ *   ; ordinate: string } *)
+
 type t =
   { window: window_settings
   ; scene: scene_settings

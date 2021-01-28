@@ -1,7 +1,6 @@
 module Make (D : Backend.T) = struct
-  (**************************************)
   (* Initialization and Backend setting *)
-  (**************************************)
+
   let x_min = ref 0.
 
   let x_max = ref 0.
@@ -29,9 +28,7 @@ module Make (D : Backend.T) = struct
 
   let gray = D.rgb 128 128 128
 
-  (********************************)
   (* redefining drawing utilities *)
-  (********************************)
 
   let clear () = D.fill_poly white (screen ())
 

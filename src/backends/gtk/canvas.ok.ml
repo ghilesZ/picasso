@@ -192,7 +192,8 @@ module Gtkcanvas = struct
     let bx, by = Geometry.to_int_point b in
     let drawable = get_drawable () in
     drawable#set_foreground col ;
-    if dashed then drawable#set_line_attributes ~style:`ON_OFF_DASH () ;
+    if dashed then drawable#set_line_attributes ~style:`ON_OFF_DASH ()
+    else drawable#set_line_attributes ~style:`SOLID () ;
     drawable#line ~x:ax ~y:ay ~x:bx ~y:by
 
   let circle fill col (x, y) rad =
