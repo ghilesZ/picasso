@@ -70,13 +70,13 @@ module Make (D : Backend.T) = struct
     let open Rendering in
     let up = r.scene.y_max and down = r.scene.y_min in
     let p1 = normalize r (cur, down) and p2 = normalize r (cur, up) in
-    draw_line ~dashed:false lightgray p1 p2
+    draw_line ~dashed:true lightgray p1 p2
 
   let yline r cur =
     let open Rendering in
     let left = r.scene.x_min and right = r.scene.x_max in
     let p1 = normalize r (left, cur) and p2 = normalize r (right, cur) in
-    draw_line ~dashed:false lightgray p1 p2
+    draw_line ~dashed:true lightgray p1 p2
 
   let draw_grid render =
     let open Rendering in
@@ -129,13 +129,13 @@ module Make (D : Backend.T) = struct
     let minibar_size = 6. in
     let fx cur =
       let x, _ = normalize r (cur, down) in
-      draw_line ~dashed:true gray
+      draw_line ~dashed:false gray
         (x, hy -. minibar_size)
         (x, hy +. minibar_size)
     in
     let fy cur =
       let _, y = normalize r (left, cur) in
-      draw_line ~dashed:true gray
+      draw_line ~dashed:false gray
         (vx -. minibar_size, y)
         (vx +. minibar_size, y)
     in

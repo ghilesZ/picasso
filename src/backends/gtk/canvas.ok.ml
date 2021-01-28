@@ -188,11 +188,11 @@ module Gtkcanvas = struct
     | None -> failwith "no font found"
 
   let draw_line ~dashed col a b =
-    ignore dashed ;
     let ax, ay = Geometry.to_int_point a in
     let bx, by = Geometry.to_int_point b in
     let drawable = get_drawable () in
     drawable#set_foreground col ;
+    if dashed then drawable#set_line_attributes ~style:`ON_OFF_DASH () ;
     drawable#line ~x:ax ~y:ay ~x:bx ~y:by
 
   let circle fill col (x, y) rad =
