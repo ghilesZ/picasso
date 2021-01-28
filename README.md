@@ -1,4 +1,5 @@
-# Picasso
+# Picasso [![Build Status](https://travis-ci.org/ghilesZ/picasso.svg?branch=master)](https://travis-ci.org/ghilesZ/picasso)
+
 Picasso is an Abstract element drawing library which provides several
 ways of drawing abstract element.
 
