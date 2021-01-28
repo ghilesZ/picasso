@@ -97,10 +97,11 @@ let draw_text c p (x, y) text =
   emit "\\node[align=%s,text=%s,font=\\tiny] at (%f*\\sx, %f*\\sy) { %s };\n"
     p c x y text
 
-let draw_line col (x1, y1) (x2, y2) =
+let draw_line ~dashed col (x1, y1) (x2, y2) =
   let col = define_color col in
-  emit "\\draw[%s] (%f*\\sx,%f*\\sy) -- (%f*\\sx, %f*\\sy);\n" col x1 y1 x2
-    y2
+  emit "\\draw[%s%s] (%f*\\sx,%f*\\sy) -- (%f*\\sx, %f*\\sy);\n" col
+    (if dashed then ",dashed" else "")
+    x1 y1 x2 y2
 
 let circle filldraw (col : color) (x, y) rad =
   let col = define_color col in

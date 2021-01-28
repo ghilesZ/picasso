@@ -18,7 +18,7 @@ module type T = sig
   val draw_text :
     color -> [< `Center | `Left | `Right] -> point -> string -> unit
 
-  val draw_line : color -> point -> point -> unit
+  val draw_line : dashed:bool -> color -> point -> point -> unit
 
   val draw_circle : color -> point -> float -> unit
 

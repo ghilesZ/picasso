@@ -5,7 +5,7 @@ open Tools
 module D : Backend.T = struct
   type color = int
 
-  let ending = Graphics.close_graph
+  let ending = close_graph
 
   let width () = float (size_x ())
 
@@ -20,7 +20,8 @@ module D : Backend.T = struct
     moveto (iof x) (iof y) ;
     draw_string str
 
-  let draw_line col (x1, y1) (x2, y2) =
+  let draw_line ~dashed col (x1, y1) (x2, y2) =
+    ignore dashed ;
     set_color col ;
     moveto (iof x1) (iof y1) ;
     lineto (iof x2) (iof y2)

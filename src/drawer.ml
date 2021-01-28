@@ -35,9 +35,9 @@ module Make (D : Backend.T) = struct
 
   let clear () = D.fill_poly white (screen ())
 
-  let draw_line col p1 p2 =
+  let draw_line ~dashed col p1 p2 =
     let p1 = to_backend_coord p1 and p2 = to_backend_coord p2 in
-    D.draw_line col p1 p2
+    D.draw_line ~dashed col p1 p2
 
   let draw_text col pos (text_x, text_y) text =
     let text_x, text_y = to_backend_coord (text_x, text_y) in
@@ -53,7 +53,7 @@ module Make (D : Backend.T) = struct
     match vertices with
     | [] -> ()
     | [x] -> fill_circle col x 2.
-    | [(xa, ya); (xb, yb)] -> draw_line col (xa, ya) (xb, yb)
+    | [(xa, ya); (xb, yb)] -> draw_line ~dashed:false col (xa, ya) (xb, yb)
     | _ ->
         let vertices = List.rev_map to_backend_coord vertices in
         f col vertices
@@ -70,13 +70,13 @@ module Make (D : Backend.T) = struct
     let open Rendering in
     let up = r.scene.y_max and down = r.scene.y_min in
     let p1 = normalize r (cur, down) and p2 = normalize r (cur, up) in
-    draw_line lightgray p1 p2
+    draw_line ~dashed:false lightgray p1 p2
 
   let yline r cur =
     let open Rendering in
     let left = r.scene.x_min and right = r.scene.x_max in
     let p1 = normalize r (left, cur) and p2 = normalize r (right, cur) in
-    draw_line lightgray p1 p2
+    draw_line ~dashed:false lightgray p1 p2
 
   let draw_grid render =
     let open Rendering in
@@ -129,11 +129,15 @@ module Make (D : Backend.T) = struct
     let minibar_size = 6. in
     let fx cur =
       let x, _ = normalize r (cur, down) in
-      draw_line gray (x, hy -. minibar_size) (x, hy +. minibar_size)
+      draw_line ~dashed:true gray
+        (x, hy -. minibar_size)
+        (x, hy +. minibar_size)
     in
     let fy cur =
       let _, y = normalize r (left, cur) in
-      draw_line gray (vx -. minibar_size, y) (vx +. minibar_size, y)
+      draw_line ~dashed:true gray
+        (vx -. minibar_size, y)
+        (vx +. minibar_size, y)
     in
     graduation 0.5 fx fy r ;
     (* vetrtical coordinates *)

@@ -187,7 +187,8 @@ module Gtkcanvas = struct
               ~y:(y + string_height) )
     | None -> failwith "no font found"
 
-  let draw_line col a b =
+  let draw_line ~dashed col a b =
+    ignore dashed ;
     let ax, ay = Geometry.to_int_point a in
     let bx, by = Geometry.to_int_point b in
     let drawable = get_drawable () in

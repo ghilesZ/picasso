@@ -60,10 +60,11 @@ let draw_text (r, g, b) _p (x, y) text =
   let c = name r g b in
   emit "<text x=\"%f\" y=\"%f\" fill=\"%s\">%s</text>\n" x y c text
 
-let draw_line (r, g, b) (x1, y1) (x2, y2) =
+let draw_line ~dashed (r, g, b) (x1, y1) (x2, y2) =
   let c = name r g b in
-  emit "<line x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke=\"%s\" />\n" x1
-    y1 x2 y2 c
+  emit "<line %sx1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke=\"%s\" />\n"
+    (if dashed then "stroke-dasharray=\"10, 5\" " else "")
+    x1 y1 x2 y2 c
 
 let circle fill (r, g, b) (x, y) rad =
   let c = name r g b in
