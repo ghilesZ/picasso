@@ -1,5 +1,5 @@
 opam-version: "2.0"
-version:"0.3.0"
+version:"0.2.0"
 maintainer: "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
 authors: [
   "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
