@@ -173,3 +173,9 @@ val in_graphics_canvas : Rendering.t -> unit
     be exited cleanly by pressing any key.
 
     @raise BackendError if the library graphics is not installed *)
+
+val in_sdl_canvas : Rendering.t -> unit
+(** Displays a Rendering.t within a sdl window. The window created can be
+    exited cleanly by pressing any key.
+
+    @raise BackendError if the library ocamlsdl2 is not installed *)

@@ -11,7 +11,7 @@ let gens =
    Generatorext.of_float_point env [200.;0.;250.]]
 
 let polyhedron = Apol.of_generator_list gens |> Drawable.of_pol
-let octagon = Aoct.of_generator_list env gens |> Drawable.of_oct
+let octagon = Aoct.of_generator_list gens |> Drawable.of_oct
 let box = Abox.of_generator_list gens |> Drawable.of_box
 
 let _ =

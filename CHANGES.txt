@@ -1,3 +1,4 @@
+on 29 Jan release of v0.2 
 - add '~dashed' arg for line drawing functions in backends
 - add 'show' function
 - make graphics and gtk optional dependencies

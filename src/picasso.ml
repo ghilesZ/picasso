@@ -9,6 +9,8 @@ let in_gtk_canvas render = Canvas.build render
 
 let in_graphics_canvas render = GraphX.build render
 
+let in_sdl_canvas render = Sdlcanvas.build render
+
 let show render =
   try in_gtk_canvas render
   with BackendError s1 -> (

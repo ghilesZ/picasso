@@ -2,8 +2,6 @@
 
 let tikz_only = ref true
 
-type internal = string (* output file *)
-
 let output = ref None
 
 let set_output out =

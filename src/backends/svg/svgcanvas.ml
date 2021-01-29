@@ -1,7 +1,5 @@
 (* this module handles the svg generation *)
 
-type internal = string (* output file *)
-
 let output = ref None
 
 let set_output out =
