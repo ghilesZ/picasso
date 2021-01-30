@@ -145,10 +145,10 @@ exception BackendError of string
 
 val show : Rendering.t -> unit
 (** Main drawing function. Displays a Rendering.t using one of the backend
-    available. It first tries with in_gtk_canvas, and if lablgtk is not
-    installed, retries using in_graphics_canvas.
+    available. It first tries with gtk, and if lablgtk is not installed,
+    retries using graphics.
 
-    @raise BackendError If none of the backeds are installed *)
+    @raise BackendError If none of the backends are installed *)
 
 val to_latex : ?tikz_only:bool -> Rendering.t -> string -> unit
 (** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If
@@ -173,9 +173,3 @@ val in_graphics_canvas : Rendering.t -> unit
     be exited cleanly by pressing any key.
 
     @raise BackendError if the library graphics is not installed *)
-
-val in_sdl_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a sdl window. The window created can be
-    exited cleanly by pressing any key.
-
-    @raise BackendError if the library ocamlsdl2 is not installed *)

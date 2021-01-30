@@ -10,8 +10,5 @@
       (select graphX.ml from
           (graphics  -> backends/graphics/graphX.ok.ml)
           (!graphics -> backends/graphics/graphX.ko.ml))
-      (select sdlcanvas.ml from
-          (sdl2  -> backends/sdl/sdlcanvas.ok.ml)
-          (!sdl2 -> backends/sdl/sdlcanvas.ko.ml))
   )
 )
