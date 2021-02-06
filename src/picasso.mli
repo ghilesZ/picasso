@@ -146,9 +146,9 @@ exception BackendError of string
 val show : Rendering.t -> unit
 (** Main drawing function. Displays a Rendering.t using one of the backend
     available. It first tries with gtk, and if lablgtk is not installed,
-    retries using graphics.
-
-    @raise BackendError If none of the backends are installed *)
+    retries using graphics. If none of the backend is installed, outputs a
+    .svg file in the current directory, named after the title of the window
+    if specified, otherwise name "picasso[number].svg" *)
 
 val to_latex : ?tikz_only:bool -> Rendering.t -> string -> unit
 (** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If
