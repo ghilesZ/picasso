@@ -9,40 +9,6 @@ and sy = 1000.
 
 let zo = 2.
 
-type color = int * int * int
-
-(* type elem =
- *   { elem: Apol.t
- *   ; col: color
- *   ; is_bounded: bool
- *         (\* to avoid recomputing the projections of a given element on a pair
- *            of variable *\)
- *   ; projs: (string * string, proj) Hashtbl.t }
- *
- * and proj = Apol.t
- *
- * let make_elem elem col =
- *   {elem; col; is_bounded= Apol.is_bounded elem; projs= Hashtbl.create 10}
- *
- * let project elem v1 v2 =
- *   try Hashtbl.find elem.projs (v1, v2)
- *   with Not_found ->
- *     let p2d = Apol.proj2D_s elem.elem v1 v2 in
- *     Hashtbl.add elem.projs (v1, v2) p2d ;
- *     p2d
- *
- * type t =
- *   { window: window_settings
- *   ; scene: scene_settings
- *   ; (\* graphical options *\)
- *     grid: bool
- *   ; axis: bool
- *   ; (\* content *\)
- *     elems: elem list
- *   ; (\* projection variables *\)
- *     abciss: string
- *   ; ordinate: string } *)
-
 type t =
   { window: window_settings
   ; scene: scene_settings
@@ -50,14 +16,14 @@ type t =
     grid: bool
   ; axis: bool
   ; (* content *)
-    elems: (color * Apol.t) list
+    elems: (Colors.t * Apol.t) list
   ; (* projection variables *)
     abciss: string
   ; ordinate: string
   ; (* elems projected on the projection variables. We differentiate the
        bounded ones from the unbounded ones for efficiency *)
-    bounded: (color * Geometry.hull) list
-  ; unbounded: (color * Apol.t) list }
+    bounded: (Colors.t * Geometry.hull) list
+  ; unbounded: (Colors.t * Apol.t) list }
 
 and window_settings =
   {padding: float; sx: float; sy: float; title: string option}
@@ -121,7 +87,7 @@ let change_size_y y a = {a with window= {a.window with sy= y}}
 
 let change_size x y a = {a with window= {a.window with sx= x; sy= y}}
 
-let add ?autofit:(auto = true) r ((c, x) : color * Drawable.t) =
+let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   let r =
     {r with elems= List.fold_left (fun acc e -> (c, e) :: acc) r.elems x}
   in
@@ -162,6 +128,12 @@ let to_vertice r e =
   |> List.rev_map (fun g ->
          Generatorext.to_vertices2D_s g r.abciss r.ordinate)
   |> Geometry.hull
+
+(* computes the union of environments of all variables *)
+let get_vars =
+  fun r ->
+  List.fold_left (fun acc (_,elm) ->
+      E.join acc (Apol.get_environment elm)) E.empty r.elems
 
 (* TODO: memoization according to projection variables. changes the
    projection variables. if those are different from the previous ones we: -

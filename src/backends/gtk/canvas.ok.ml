@@ -3,6 +3,62 @@ open Tools
 (* This module is a drawing area wrapper that handles mouse events and expose
    event *)
 open Geometry
+open GButton
+
+let set_proj_vars render array i j =
+  let n = Array.length array in
+  Rendering.set_proj_vars render (array.(i mod n)) (array.(j mod n))
+
+let array_var render =
+  let open Apronext in
+  let env = Rendering.get_vars render in
+  let arr = Array.make (Environmentext.size env) "" in
+  let cpt = ref 0 in
+  Environmentext.iter (fun v -> arr.(!cpt) <- (Apron.Var.to_string v); incr cpt) env;
+  arr
+
+class toolbar ?packing ~width ~height () =
+  let toolbar = toolbar ~style:`ICONS ~orientation:(`HORIZONTAL) ?packing () in
+  let add_item it = toolbar#insert it in
+  let _add_item_image it src =
+    let pb = GdkPixbuf.from_file_at_size src ~width ~height in
+    let image = GMisc.image ~pixbuf:pb () in
+    it#set_icon_widget image#coerce;
+    add_item it
+  in
+  let prev_var = tool_button ~label:"prev" () in
+  let next_var = tool_button ~label:"next" () in
+
+  object (_self)
+    inherit GObj.widget toolbar#as_widget
+    initializer(
+      add_item next_var;
+      add_item prev_var;
+    )
+
+    val mutable canvas = None
+    val mutable enview = None
+    val mutable abciss = 0
+    val mutable ordinate = 0
+    val mutable vars = [||]
+
+    method set_render (render:Rendering.t ref) =
+      vars <- array_var !render;
+      ignore (prev_var#connect#clicked
+                ~callback:(fun () ->
+                  abciss <- abciss -1;
+                  render := set_proj_vars !render vars abciss ordinate;
+        ));
+      ignore (next_var#connect#clicked
+                ~callback:(fun () ->
+                  abciss <- abciss +1;
+                  render := set_proj_vars !render vars abciss ordinate;
+        ));
+      ()
+  end
+
+let create_toolbar ~width ~height ~packing =
+  new toolbar ~width ~height ~packing ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -272,6 +328,10 @@ let build render =
   let window = GWindow.window ~width ~height ~title () in
   window#connect#destroy ~callback:GMain.Main.quit |> ignore ;
   window#event#add [`ALL_EVENTS] ;
-  let canvas = create_canvas ~packing:window#add ~height ~width in
+  let vbox = GPack.vbox ~packing:window#add () in
+  let canvas = create_canvas ~packing:vbox#add ~height:(height-30) ~width in
+  let toolbar = create_toolbar ~packing:vbox#add ~height:30 ~width in
   let render = ref render in
-  canvas#set_render render ; window#show () ; GMain.Main.main ()
+  canvas#set_render render ;
+  toolbar#set_render render;
+  window#show () ; GMain.Main.main ()
