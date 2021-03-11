@@ -5,10 +5,6 @@ open Tools
 open Geometry
 open GButton
 
-let set_proj_vars render array i j =
-  let n = Array.length array in
-  Rendering.set_proj_vars render (array.(i mod n)) (array.(j mod n))
-
 let array_var render =
   let open Apronext in
   let env = Rendering.get_vars render in
@@ -17,48 +13,55 @@ let array_var render =
   Environmentext.iter (fun v -> arr.(!cpt) <- (Apron.Var.to_string v); incr cpt) env;
   arr
 
-class toolbar ?packing ~width ~height () =
+let find_index arr v =
+  let exception Found of int in
+  try Array.iteri (fun i v' -> if v' = v then raise (Found i)) arr;
+      None
+  with Found i -> Some i
+
+class toolbar ?packing () =
   let toolbar = toolbar ~style:`ICONS ~orientation:(`HORIZONTAL) ?packing () in
   let add_item it = toolbar#insert it in
-  let _add_item_image it src =
-    let pb = GdkPixbuf.from_file_at_size src ~width ~height in
-    let image = GMisc.image ~pixbuf:pb () in
-    it#set_icon_widget image#coerce;
-    add_item it
-  in
   let prev_var = tool_button ~label:"prev" () in
   let next_var = tool_button ~label:"next" () in
 
   object (_self)
     inherit GObj.widget toolbar#as_widget
     initializer(
-      add_item next_var;
       add_item prev_var;
-    )
+      add_item next_var;
+  )
 
-    val mutable canvas = None
-    val mutable enview = None
     val mutable abciss = 0
     val mutable ordinate = 0
     val mutable vars = [||]
 
+    val mutable refresh = fun () -> ()
+    method set_refresh f = refresh <- f
+
     method set_render (render:Rendering.t ref) =
       vars <- array_var !render;
+      abciss <- find_index vars !render.abciss |> Option.get;
+      ordinate <- find_index vars !render.ordinate |> Option.get;
       ignore (prev_var#connect#clicked
                 ~callback:(fun () ->
-                  abciss <- abciss -1;
-                  render := set_proj_vars !render vars abciss ordinate;
+                  abciss <- ((Array.length vars + abciss -1) mod Array.length vars);
+                  let new_abc = vars.(abciss) in
+                  Format.printf "%s\n%!" new_abc;
+                  render := Rendering.set_proj_vars !render new_abc vars.(ordinate);
+                  refresh()
         ));
       ignore (next_var#connect#clicked
                 ~callback:(fun () ->
-                  abciss <- abciss +1;
-                  render := set_proj_vars !render vars abciss ordinate;
+                  abciss <- ((abciss +1) mod Array.length vars);
+                  render := Rendering.set_proj_vars !render vars.(abciss) vars.(ordinate);
+                  refresh()
         ));
       ()
   end
 
-let create_toolbar ~width ~height ~packing =
-  new toolbar ~width ~height ~packing ()
+let create_toolbar ~packing =
+  new toolbar ~packing ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -330,8 +333,9 @@ let build render =
   window#event#add [`ALL_EVENTS] ;
   let vbox = GPack.vbox ~packing:window#add () in
   let canvas = create_canvas ~packing:vbox#add ~height:(height-30) ~width in
-  let toolbar = create_toolbar ~packing:vbox#add ~height:30 ~width in
+  let toolbar = create_toolbar ~packing:vbox#add in
   let render = ref render in
   canvas#set_render render ;
   toolbar#set_render render;
+  toolbar#set_refresh (fun () -> canvas#repaint ());
   window#show () ; GMain.Main.main ()

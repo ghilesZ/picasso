@@ -1,6 +1,7 @@
 open Tools
 open Apronext
 module E = Environmentext
+module G = Generatorext
 
 (* Speed *)
 let sx = 1000.
@@ -125,15 +126,14 @@ let denormalize u =
 (* convex hull computation *)
 let to_vertice r e =
   Apol.to_generator_list e
-  |> List.rev_map (fun g ->
-         Generatorext.to_vertices2D_s g r.abciss r.ordinate)
+  |> List.rev_map (fun g -> G.to_vertices2D_s g r.abciss r.ordinate)
   |> Geometry.hull
 
 (* computes the union of environments of all variables *)
-let get_vars =
-  fun r ->
-  List.fold_left (fun acc (_,elm) ->
-      E.join acc (Apol.get_environment elm)) E.empty r.elems
+let get_vars r =
+  List.fold_left
+    (fun acc (_, elm) -> E.join acc (Apol.get_environment elm))
+    E.empty r.elems
 
 (* TODO: memoization according to projection variables. changes the
    projection variables. if those are different from the previous ones we: -
@@ -145,7 +145,7 @@ let set_proj_vars r v1 v2 =
       (fun (b, u) (c, pol) ->
         let p2d = Apol.proj2D_s pol v1 v2 in
         if Apol.is_bounded p2d then ((c, to_vertice r p2d) :: b, u)
-        else (b, (c, p2d) :: u))
+        else (b, (c, p2d) :: u) )
       ([], []) r.elems
   in
   {r with abciss= v1; ordinate= v2; bounded; unbounded}
@@ -155,7 +155,7 @@ let set_proj_vars r v1 v2 =
 let abstract_screen r =
   let x = r.abciss and y = r.ordinate in
   let scenv = E.make_s [||] [|x; y|] in
-  let to_gens (x, y) = Generatorext.of_float_point scenv [x; y] in
+  let to_gens (x, y) = G.of_float_point scenv [x; y] in
   [(0., 0.); (r.window.sx, 0.); (r.window.sx, r.window.sy); (0., r.window.sy)]
   |> List.rev_map (denormalize r)
   |> List.rev_map to_gens |> Apol.of_generator_list
@@ -168,6 +168,6 @@ let to_vertices r =
     (fun acc (c, e) ->
       let interscreen = Apol.meet e screen in
       if Apol.is_bottom interscreen then acc
-      else (c, to_vertice r interscreen) :: acc)
+      else (c, to_vertice r interscreen) :: acc )
     r.bounded r.unbounded
   |> List.rev_map (fun (c, h) -> (c, List.rev_map norm h))

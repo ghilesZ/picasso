@@ -1,2 +1,2 @@
-(lang dune 1.2)
+(lang dune 1.1)
 (name picasso)
