@@ -10,58 +10,66 @@ let array_var render =
   let env = Rendering.get_vars render in
   let arr = Array.make (Environmentext.size env) "" in
   let cpt = ref 0 in
-  Environmentext.iter (fun v -> arr.(!cpt) <- (Apron.Var.to_string v); incr cpt) env;
+  Environmentext.iter
+    (fun v ->
+      arr.(!cpt) <- Apron.Var.to_string v ;
+      incr cpt )
+    env ;
   arr
 
 let find_index arr v =
   let exception Found of int in
-  try Array.iteri (fun i v' -> if v' = v then raise (Found i)) arr;
-      None
+  try
+    Array.iteri (fun i v' -> if v' = v then raise (Found i)) arr ;
+    None
   with Found i -> Some i
 
-class toolbar ?packing () =
-  let toolbar = toolbar ~style:`ICONS ~orientation:(`HORIZONTAL) ?packing () in
-  let add_item it = toolbar#insert it in
-  let prev_var = tool_button ~label:"prev" () in
-  let next_var = tool_button ~label:"next" () in
+let next_v vars i = vars.((i + 1) mod Array.length vars)
 
-  object (_self)
-    inherit GObj.widget toolbar#as_widget
-    initializer(
-      add_item prev_var;
-      add_item next_var;
-  )
+let prev_v vars i = vars.((Array.length vars + i - 1) mod Array.length vars)
 
-    val mutable abciss = 0
-    val mutable ordinate = 0
+class toolbar ~width ?packing () =
+  let tb = GPack.hbox ~width ?packing () in
+  let prev_var = button ~packing:tb#add ~label:"prev" () in
+  let cur = GMisc.label ~packing:tb#add ~width:(width - 50) ~text:"" () in
+  let next_var = button ~packing:tb#add ~label:"next" () in
+  object (self)
+    val mutable abc = 0
+
+    val mutable ord = 0
+
     val mutable vars = [||]
 
     val mutable refresh = fun () -> ()
+
     method set_refresh f = refresh <- f
 
-    method set_render (render:Rendering.t ref) =
-      vars <- array_var !render;
-      abciss <- find_index vars !render.abciss |> Option.get;
-      ordinate <- find_index vars !render.ordinate |> Option.get;
-      ignore (prev_var#connect#clicked
-                ~callback:(fun () ->
-                  abciss <- ((Array.length vars + abciss -1) mod Array.length vars);
-                  let new_abc = vars.(abciss) in
-                  Format.printf "%s\n%!" new_abc;
-                  render := Rendering.set_proj_vars !render new_abc vars.(ordinate);
-                  refresh()
-        ));
-      ignore (next_var#connect#clicked
-                ~callback:(fun () ->
-                  abciss <- ((abciss +1) mod Array.length vars);
-                  render := Rendering.set_proj_vars !render vars.(abciss) vars.(ordinate);
-                  refresh()
-        ));
+    method set_vars () =
+      next_var#set_label (next_v vars abc) ;
+      prev_var#set_label (prev_v vars abc) ;
+      cur#set_label (String.make 50 ' ' ^ vars.(abc) ^ String.make 50 ' ')
+
+    method set_render (render : Rendering.t ref) =
+      vars <- array_var !render ;
+      abc <- find_index vars !render.abciss |> Option.get ;
+      ord <- find_index vars !render.ordinate |> Option.get ;
+      self#set_vars () ;
+      ignore
+        (prev_var#connect#clicked ~callback:(fun () ->
+             abc <- (Array.length vars + abc - 1) mod Array.length vars ;
+             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
+             self#set_vars () ;
+             refresh () ) ) ;
+      ignore
+        (next_var#connect#clicked ~callback:(fun () ->
+             abc <- (abc + 1) mod Array.length vars ;
+             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
+             self#set_vars () ;
+             refresh () ) ) ;
       ()
   end
 
-let create_toolbar ~packing =
-  new toolbar ~packing ()
+let create_toolbar ~width ~packing = new toolbar ~width ~packing ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -99,7 +107,7 @@ class clickable ~packing ~width ~height () =
       ignore
         (da#event#connect#expose ~callback:(fun _ ->
              f (self#get_drawable ())#size ;
-             false))
+             false ) )
 
     method private press f_left =
       ignore
@@ -112,7 +120,7 @@ class clickable ~packing ~width ~height () =
                  Gdk.Window.set_cursor w oc ;
                  f_left (self#get_coord (x, y))
              | _ -> () ) ;
-             false))
+             false ) )
 
     method private click f_left =
       ignore
@@ -121,7 +129,7 @@ class clickable ~packing ~width ~height () =
              ( match GdkEvent.Button.button c with
              | 1 -> f_left (self#get_coord (x, y))
              | _ -> () ) ;
-             false))
+             false ) )
 
     method private release f_left =
       ignore
@@ -134,7 +142,7 @@ class clickable ~packing ~width ~height () =
                  Gdk.Window.set_cursor w mc ;
                  f_left (self#get_coord (x, y))
              | _ -> () ) ;
-             false))
+             false ) )
 
     method private drag (f_left : point -> point -> unit) =
       ignore
@@ -148,14 +156,14 @@ class clickable ~packing ~width ~height () =
                  if Geometry.sq_dist p1 p2 >= tolerance then (
                    f_left (self#get_coord (a, b)) (self#get_coord (x, y)) ;
                    self#set_moving_left (x, y) ) ) ;
-             false))
+             false ) )
 
     method private scrollwheel (fscroll : Gdk.Tags.scroll_direction -> unit)
         =
       ignore
         (da#event#connect#scroll ~callback:(fun c ->
              fscroll (GdkEvent.Scroll.direction c) ;
-             false))
+             false ) )
 
     method mouse_set ?expose:(exp = (fun _ -> () : int * int -> unit))
         ?press:(pl = fun _ -> ()) ?release:(rl = fun _ -> ())
@@ -195,7 +203,7 @@ module Gtkcanvas = struct
           | f ->
               fontname := fn ;
               raise (FontFound f)
-          | exception Gpointer.Null -> ())
+          | exception Gpointer.Null -> () )
         font_list ;
       failwith "no font found"
     with FontFound f -> font := Some f
@@ -295,17 +303,17 @@ class canvas ~packing ~width ~height () =
       self#mouse_set
         ~expose:(fun (a, b) ->
           render := !render |> Rendering.change_size (float a) (float b) ;
-          self#repaint ())
+          self#repaint () )
         ~drag:(fun (a, b) (x, y) ->
           render := Rendering.translate (x -. a, y -. b) !render ;
-          self#repaint ())
+          self#repaint () )
         ~scrollwheel:(fun direction ->
           (render :=
              match direction with
              | `DOWN -> Rendering.zoom !render
              | `UP -> Rendering.unzoom !render
-             | _ -> !render) ;
-          self#repaint ())
+             | _ -> !render ) ;
+          self#repaint () )
         ()
 
     (* Repaint the widget. *)
@@ -332,10 +340,13 @@ let build render =
   window#connect#destroy ~callback:GMain.Main.quit |> ignore ;
   window#event#add [`ALL_EVENTS] ;
   let vbox = GPack.vbox ~packing:window#add () in
-  let canvas = create_canvas ~packing:vbox#add ~height:(height-30) ~width in
-  let toolbar = create_toolbar ~packing:vbox#add in
+  let canvas =
+    create_canvas ~packing:vbox#add ~height:(height - 30) ~width
+  in
+  let toolbar = create_toolbar ~width ~packing:vbox#add in
   let render = ref render in
   canvas#set_render render ;
-  toolbar#set_render render;
-  toolbar#set_refresh (fun () -> canvas#repaint ());
-  window#show () ; GMain.Main.main ()
+  toolbar#set_render render ;
+  toolbar#set_refresh (fun () -> canvas#repaint ()) ;
+  window#show () ;
+  GMain.Main.main ()

@@ -140,6 +140,7 @@ let get_vars r =
    compute the hull for bounded elements - project the unbounded ones on the
    specified variables *)
 let set_proj_vars r v1 v2 =
+  let r = {r with abciss= v1; ordinate= v2} in
   let bounded, unbounded =
     List.fold_left
       (fun (b, u) (c, pol) ->
@@ -148,7 +149,7 @@ let set_proj_vars r v1 v2 =
         else (b, (c, p2d) :: u) )
       ([], []) r.elems
   in
-  {r with abciss= v1; ordinate= v2; bounded; unbounded}
+  {r with bounded; unbounded}
 
 (* TODO: recompute screen only when the window changes size and when
    projection variables are changed *)
