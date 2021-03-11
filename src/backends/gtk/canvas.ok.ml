@@ -153,7 +153,7 @@ class clickable ~packing ~width ~height () =
              ( match old_left with
              | None -> ()
              | Some ((a, b) as p2) ->
-                 if Geometry.sq_dist p1 p2 >= tolerance then (
+                 if sq_dist p1 p2 >= tolerance then (
                    f_left (self#get_coord (a, b)) (self#get_coord (x, y)) ;
                    self#set_moving_left (x, y) ) ) ;
              false ) )
@@ -204,8 +204,7 @@ module Gtkcanvas = struct
               fontname := fn ;
               raise (FontFound f)
           | exception Gpointer.Null -> () )
-        font_list ;
-      failwith "no font found"
+        font_list
     with FontFound f -> font := Some f
 
   let set_drawable d =
@@ -236,27 +235,24 @@ module Gtkcanvas = struct
   (* Draw text left, centre or right justified at point. (x,y) point is
      either top left, top middle or top right of text. *)
   let draw_text col position p text =
-    let x, y = Geometry.to_int_point p in
+    let x, y = to_int_point p in
     match !font with
     | Some font -> (
         let drawable = get_drawable () in
         drawable#set_foreground col ;
-        let string_width = Gdk.Font.string_width font text in
-        let string_height = Gdk.Font.string_height font text in
+        let w = Gdk.Font.string_width font text in
+        let h = Gdk.Font.string_height font text in
         match position with
-        | `Left -> drawable#string text ~font ~x ~y:(y + string_height)
-        | `Center ->
-            drawable#string text ~font
-              ~x:(x - (string_width / 2))
-              ~y:(y + string_height)
-        | `Right ->
-            drawable#string text ~font ~x:(x - string_width)
-              ~y:(y + string_height) )
-    | None -> failwith "no font found"
+        | `Left -> drawable#string text ~font ~x ~y:(y + h)
+        | `Center -> drawable#string text ~font ~x:(x - (w / 2)) ~y:(y + h)
+        | `Right -> drawable#string text ~font ~x:(x - w) ~y:(y + h) )
+    | None ->
+        Format.eprintf "Picasso: no font found\n" ;
+        ()
 
   let draw_line ~dashed col a b =
-    let ax, ay = Geometry.to_int_point a in
-    let bx, by = Geometry.to_int_point b in
+    let ax, ay = to_int_point a in
+    let bx, by = to_int_point b in
     let drawable = get_drawable () in
     drawable#set_foreground col ;
     if dashed then drawable#set_line_attributes ~style:`ON_OFF_DASH ()
@@ -264,7 +260,7 @@ module Gtkcanvas = struct
     drawable#line ~x:ax ~y:ay ~x:bx ~y:by
 
   let circle fill col (x, y) rad =
-    let x, y = Geometry.to_int_point (x -. (rad /. 2.), y -. (rad /. 2.)) in
+    let x, y = to_int_point (x -. (rad /. 2.), y -. (rad /. 2.)) in
     let rad = int_of_float rad in
     let drawable = get_drawable () in
     drawable#set_foreground col ;
@@ -276,7 +272,7 @@ module Gtkcanvas = struct
 
   (* polygons *)
   let poly fill col vertices =
-    let vertices = List.rev_map Geometry.to_int_point vertices in
+    let vertices = List.rev_map to_int_point vertices in
     let drawable = get_drawable () in
     drawable#set_foreground col ;
     drawable#polygon vertices ~filled:fill
