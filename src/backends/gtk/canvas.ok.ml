@@ -28,11 +28,15 @@ let next_v vars i = vars.((i + 1) mod Array.length vars)
 
 let prev_v vars i = vars.((Array.length vars + i - 1) mod Array.length vars)
 
-class toolbar ~width ?packing () =
-  let tb = GPack.hbox ~width ?packing () in
-  let prev_var = button ~packing:tb#add ~label:"prev" () in
-  let cur = GMisc.label ~packing:tb#add ~width:(width - 50) ~text:"" () in
-  let next_var = button ~packing:tb#add ~label:"next" () in
+class toolbar ~width ~height ~hpacking ~vpacking () =
+  let tb_h = GPack.hbox ~width ~packing:hpacking () in
+  let prev_var_h = button ~packing:tb_h#add () in
+  let cur_h = GMisc.label ~packing:tb_h#add ~width:(width - 50) () in
+  let next_var_h = button ~packing:tb_h#add () in
+  let tb_v = GPack.vbox ~packing:vpacking ~width:40 () in
+  let prev_var_v = button ~packing:tb_v#add () in
+  let cur_v = GMisc.label ~packing:tb_v#add ~height:(height - 50) () in
+  let next_var_v = button ~packing:tb_v#add () in
   object (self)
     val mutable abc = 0
 
@@ -42,12 +46,15 @@ class toolbar ~width ?packing () =
 
     val mutable refresh = fun () -> ()
 
-    method set_refresh f = refresh <- f
-
     method set_vars () =
-      next_var#set_label (next_v vars abc) ;
-      prev_var#set_label (prev_v vars abc) ;
-      cur#set_label (String.make 50 ' ' ^ vars.(abc) ^ String.make 50 ' ')
+      next_var_h#set_label (next_v vars abc) ;
+      prev_var_h#set_label (prev_v vars abc) ;
+      cur_h#set_label vars.(abc) ;
+      next_var_v#set_label (next_v vars ord) ;
+      prev_var_v#set_label (prev_v vars ord) ;
+      cur_v#set_label vars.(ord)
+
+    method set_refresh f = refresh <- (fun () -> self#set_vars () ; f ())
 
     method set_render (render : Rendering.t ref) =
       vars <- array_var !render ;
@@ -55,21 +62,30 @@ class toolbar ~width ?packing () =
       ord <- find_index vars !render.ordinate |> Option.get ;
       self#set_vars () ;
       ignore
-        (prev_var#connect#clicked ~callback:(fun () ->
+        (prev_var_h#connect#clicked ~callback:(fun () ->
              abc <- (Array.length vars + abc - 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             self#set_vars () ;
              refresh () ) ) ;
       ignore
-        (next_var#connect#clicked ~callback:(fun () ->
+        (next_var_h#connect#clicked ~callback:(fun () ->
              abc <- (abc + 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             self#set_vars () ;
+             refresh () ) ) ;
+      ignore
+        (prev_var_v#connect#clicked ~callback:(fun () ->
+             ord <- (Array.length vars + ord - 1) mod Array.length vars ;
+             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
+             refresh () ) ) ;
+      ignore
+        (next_var_v#connect#clicked ~callback:(fun () ->
+             ord <- (ord + 1) mod Array.length vars ;
+             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
              refresh () ) ) ;
       ()
   end
 
-let create_toolbar ~width ~packing = new toolbar ~width ~packing ()
+let toolbar ~width ~height ~hpacking =
+  new toolbar ~height ~width ~hpacking ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -335,14 +351,13 @@ let build render =
   let window = GWindow.window ~width ~height ~title () in
   window#connect#destroy ~callback:GMain.Main.quit |> ignore ;
   window#event#add [`ALL_EVENTS] ;
-  let vbox = GPack.vbox ~packing:window#add () in
-  let canvas =
-    create_canvas ~packing:vbox#add ~height:(height - 30) ~width
-  in
-  let toolbar = create_toolbar ~width ~packing:vbox#add in
+  let hbox = GPack.hbox ~width ~packing:window#add () in
+  let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
+  let c = create_canvas ~packing:vbox#add ~height:(height - 30) ~width in
+  let tb = toolbar ~width ~height ~hpacking:vbox#add ~vpacking:hbox#add in
   let render = ref render in
-  canvas#set_render render ;
-  toolbar#set_render render ;
-  toolbar#set_refresh (fun () -> canvas#repaint ()) ;
+  c#set_render render ;
+  tb#set_render render ;
+  tb#set_refresh (fun () -> c#repaint ()) ;
   window#show () ;
   GMain.Main.main ()
