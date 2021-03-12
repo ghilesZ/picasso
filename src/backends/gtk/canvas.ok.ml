@@ -28,15 +28,22 @@ let next_v vars i = vars.((i + 1) mod Array.length vars)
 
 let prev_v vars i = vars.((Array.length vars + i - 1) mod Array.length vars)
 
-class toolbar ~width ~height ~hpacking ~vpacking () =
-  let tb_h = GPack.hbox ~width ~packing:hpacking () in
+class toolbar ~width ~hpack ~vpack () =
+  let tb_h = GPack.hbox ~height:40 ~width:(width - 40) ~packing:hpack () in
   let prev_var_h = button ~packing:tb_h#add () in
-  let cur_h = GMisc.label ~packing:tb_h#add ~width:(width - 50) () in
+  let _lab = GMisc.label ~packing:tb_h#add () in
+  let _lab = GMisc.label ~packing:tb_h#add ~text:"X axis: " () in
+  let cur_h = GMisc.label ~packing:tb_h#add () in
+  let _lab = GMisc.label ~packing:tb_h#add () in
   let next_var_h = button ~packing:tb_h#add () in
-  let tb_v = GPack.vbox ~packing:vpacking ~width:40 () in
+  let tb_v = GPack.vbox ~packing:vpack ~width:40 () in
   let prev_var_v = button ~packing:tb_v#add () in
-  let cur_v = GMisc.label ~packing:tb_v#add ~height:(height - 50) () in
+  let _lab = GMisc.label ~packing:tb_v#add () in
+  let _lab = GMisc.label ~packing:tb_v#add ~text:"Y axis: " () in
+  let cur_v = GMisc.label ~packing:tb_v#add () in
+  let _lab = GMisc.label ~packing:tb_v#add () in
   let next_var_v = button ~packing:tb_v#add () in
+  let _lab = GMisc.label ~packing:tb_v#add ~height:40 () in
   object (self)
     val mutable abc = 0
 
@@ -84,8 +91,7 @@ class toolbar ~width ~height ~hpacking ~vpacking () =
       ()
   end
 
-let toolbar ~width ~height ~hpacking =
-  new toolbar ~height ~width ~hpacking ()
+let toolbar ~width ~hpack = new toolbar ~width ~hpack ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -354,7 +360,7 @@ let build render =
   let hbox = GPack.hbox ~width ~packing:window#add () in
   let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
   let c = create_canvas ~packing:vbox#add ~height:(height - 30) ~width in
-  let tb = toolbar ~width ~height ~hpacking:vbox#add ~vpacking:hbox#add in
+  let tb = toolbar ~width ~hpack:vbox#add ~vpack:hbox#add in
   let render = ref render in
   c#set_render render ;
   tb#set_render render ;

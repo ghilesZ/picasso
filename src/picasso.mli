@@ -129,10 +129,10 @@ module Rendering3d : sig
   val create : abciss:string -> ordinate:string -> height:string -> unit -> t
   (** Initalizes an empty 3D scenes. *)
 
-  val add : t -> Drawable.t -> t
+  val add : t -> Colors.t * Drawable.t -> t
   (** Registers an abstract element into a scene *)
 
-  val add_l : t -> Drawable.t list -> t
+  val add_l : t -> (Colors.t * Drawable.t) list -> t
   (** Registers a list of element into a scene. [add_l r l] is equivalent to
       calling [add] successively on the elements of [l] *)
 end

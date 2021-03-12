@@ -21,9 +21,8 @@ let _ =
   let r =
     Rendering.add_l r [(blue, polyhedron); (red, octagon); (green, box)]
   in
-  (* to_svg r "file.svg";
-   * to_latex ~tikz_only:false r "file.tex";
-   * let r3 = Rendering3d.create ~abciss:"x" ~ordinate:"y" ~height:"z" () in
-   * let r3 = Rendering3d.add_l r3 [polyhedron; octagon] in
-   * to_obj r3 "file.obj"; *)
-  show r
+  to_svg r "file.svg" ;
+  to_latex ~tikz_only:false r "file.tex" ;
+  let r3 = Rendering3d.create ~abciss:"x" ~ordinate:"y" ~height:"z" () in
+  let r3 = Rendering3d.add_l r3 [(blue, polyhedron); (red, octagon)] in
+  to_obj r3 "file.obj" ; show r

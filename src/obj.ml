@@ -48,18 +48,42 @@ let combine f acc l1 l2 =
     acc l1
 
 (* builds the list of triangle faces of a polyhedra *)
-let polyhedra_to_triangles gens : triangle3D list =
+let poly_to_triangles gens : triangle3D list =
   let pairs l1 l2 = combine (fun acc x y -> (x, y) :: acc) [] l1 l2 in
-  let triplets l1 pl =
-    combine (fun acc x (y, z) -> (x, y, z) :: acc) [] l1 pl
-  in
+  let tripl l pl = combine (fun acc x (y, z) -> (x, y, z) :: acc) [] l pl in
   match gens with
   | [] -> []
   | [x] -> [(x, x, x)]
   | [x; y] -> [(x, x, y)]
-  | _ :: (_ :: _ :: _ as p2 as p1) -> pairs p1 p2 |> triplets gens
+  | _ :: (_ :: (_ :: _ as p2) as p1) -> pairs p1 p2 |> tripl gens
 
-let output r file =
-  let open Rendering3d in
-  let oc = open_out file in
-  List.iter (fun e -> triangles oc (polyhedra_to_triangles e)) r.bounded3
+let newmtl oc (r, g, b) =
+  let color = Format.asprintf "r%ig%ib%i" r g b in
+  Format.asprintf "newmtl %s\n" color |> output_string oc ;
+  let r = float r /. 255. and g = float g /. 255. and b = float b /. 255. in
+  Format.asprintf "Ka %f %f %f\n" r g b |> output_string oc ;
+  Format.asprintf "Kd %f %f %f\n" r g b |> output_string oc ;
+  output_string oc ("usemtl " ^ color ^ "\n")
+
+let output =
+  let module CMap = Map.Make (struct
+    type t = Colors.t
+
+    let compare = compare
+  end) in
+  fun r file ->
+    let open Rendering3d in
+    let oc = open_out file in
+    let colored =
+      List.fold_left
+        (fun acc (c, e) ->
+          CMap.update c
+            (function None -> Some [e] | Some l -> Some (e :: l))
+            acc )
+        CMap.empty r.bounded3
+    in
+    CMap.iter
+      (fun c elms ->
+        newmtl oc c ;
+        List.iter (fun e -> triangles oc (poly_to_triangles e)) elms )
+      colored
