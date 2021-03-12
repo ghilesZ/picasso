@@ -1,3 +1,4 @@
+- fix font and visual improvement when changing variables
 - add variable selection for axes with gtk
 - add color for obj generation
 - show now generate a svg file when none of graphics and lablgtk are installed

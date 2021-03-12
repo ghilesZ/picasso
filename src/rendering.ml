@@ -101,6 +101,19 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
 let add_l ?autofit:(auto = true) r drawables =
   List.fold_left (add ~autofit:auto) r drawables
 
+let focus r =
+  let open Intervalext in
+  let bounds v =
+    r.elems
+    |> List.fold_left
+         (fun acc (_, e) ->
+           try Apol.bound_variable_s e v |> join acc with Failure _ -> acc )
+         bottom
+    |> to_float
+  in
+  let x_min, x_max = bounds r.abciss and y_min, y_max = bounds r.ordinate in
+  {r with scene= {x_min; x_max; y_min; y_max}}
+
 (* given a window and a scene, returns a function that maps an abstract
    coordinate to a point of the scene to the window *)
 let normalize u =
@@ -157,7 +170,7 @@ let set_proj_vars r v1 v2 =
         else (b, (c, p2d) :: u) )
       ([], []) r.elems
   in
-  {r with bounded; unbounded}
+  focus {r with bounded; unbounded}
 
 (* TODO: recompute screen only when the window changes size and when
    projection variables are changed *)

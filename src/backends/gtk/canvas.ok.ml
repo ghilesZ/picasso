@@ -265,23 +265,43 @@ module Gtkcanvas = struct
 
   let rgb r g b : color = `RGB (256 * r, 256 * g, 256 * b)
 
+  let descr = Pango.Font.from_string "fixed"
+
+  (* Draw text left, centre or right justified at point. (x,y) point is *
+     either top left, top middle or top right of text. *)
+  let draw_text col position p text : unit =
+    let x, y = to_int_point p in
+    let drawable = get_drawable () in
+    drawable#set_foreground col ;
+    let context = Gdk.Screen.get_pango_context () in
+    let layout = Pango.Layout.create context in
+    Pango.Layout.set_font_description layout descr ;
+    Pango.Layout.set_text layout text ;
+    let width = Pango.Layout.get_width layout in
+    let fore, back = (None, None) in
+    match position with
+    | `Left -> drawable#put_layout ~x ~y ?fore ?back layout
+    | `Center ->
+        drawable#put_layout ~x:(x - (width / 2)) ~y ?fore ?back layout
+    | `Right -> drawable#put_layout ~x:(x - width) ~y ?fore ?back layout
+
   (* Draw text left, centre or right justified at point. (x,y) point is
      either top left, top middle or top right of text. *)
-  let draw_text col position p text =
-    let x, y = to_int_point p in
-    match !font with
-    | Some font -> (
-        let drawable = get_drawable () in
-        drawable#set_foreground col ;
-        let w = Gdk.Font.string_width font text in
-        let h = Gdk.Font.string_height font text in
-        match position with
-        | `Left -> drawable#string text ~font ~x ~y:(y + h)
-        | `Center -> drawable#string text ~font ~x:(x - (w / 2)) ~y:(y + h)
-        | `Right -> drawable#string text ~font ~x:(x - w) ~y:(y + h) )
-    | None ->
-        Format.eprintf "Picasso: no font found\n" ;
-        ()
+  (* let draw_text col position p text =
+   *   let x, y = to_int_point p in
+   *   match !font with
+   *   | Some font -> (
+   *       let drawable = get_drawable () in
+   *       drawable#set_foreground col ;
+   *       let w = Gdk.Font.string_width font text in
+   *       let h = Gdk.Font.string_height font text in
+   *       match position with
+   *       | `Left -> drawable#string text ~font ~x ~y:(y + h)
+   *       | `Center -> drawable#string text ~font ~x:(x - (w / 2)) ~y:(y + h)
+   *       | `Right -> drawable#string text ~font ~x:(x - w) ~y:(y + h) )
+   *   | None ->
+   *       Format.eprintf "Picasso: no font found\n" ;
+   *       () *)
 
   let draw_line ~dashed col a b =
     let ax, ay = to_int_point a in
