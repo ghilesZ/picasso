@@ -166,10 +166,10 @@ val to_obj : Rendering3d.t -> string -> unit
 val in_gtk_canvas : Rendering.t -> unit
 (** Displays a Rendering.t within a scrollable, zoomable gtk canvas.
 
-    @raise BackendError if the library lablgtk is not installed *)
+    @raise BackendError if the lablgtk library is not installed *)
 
 val in_graphics_canvas : Rendering.t -> unit
 (** Displays a Rendering.t within a graphics window. The window created can
     be exited cleanly by pressing any key.
 
-    @raise BackendError if the library graphics is not installed *)
+    @raise BackendError if the graphics library is not installed *)

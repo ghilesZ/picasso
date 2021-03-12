@@ -24,9 +24,14 @@ let find_index arr v =
     None
   with Found i -> Some i
 
-let next_v vars i = vars.((i + 1) mod Array.length vars)
+let next_v vars i j =
+  let i = (i + 1) mod Array.length vars in
+  if i = j then vars.((i + 1) mod Array.length vars) else vars.(i)
 
-let prev_v vars i = vars.((Array.length vars + i - 1) mod Array.length vars)
+let prev_v vars i j =
+  let i = (Array.length vars + i - 1) mod Array.length vars in
+  if i = j then vars.((Array.length vars + i - 1) mod Array.length vars)
+  else vars.(i)
 
 class toolbar ~width ~hpack ~vpack () =
   let tb_h = GPack.hbox ~height:40 ~width:(width - 40) ~packing:hpack () in
@@ -54,11 +59,11 @@ class toolbar ~width ~hpack ~vpack () =
     val mutable refresh = fun () -> ()
 
     method set_vars () =
-      next_var_h#set_label (next_v vars abc) ;
-      prev_var_h#set_label (prev_v vars abc) ;
+      next_var_h#set_label (next_v vars abc ord) ;
+      prev_var_h#set_label (prev_v vars abc ord) ;
       cur_h#set_label vars.(abc) ;
-      next_var_v#set_label (next_v vars ord) ;
-      prev_var_v#set_label (prev_v vars ord) ;
+      next_var_v#set_label (next_v vars ord abc) ;
+      prev_var_v#set_label (prev_v vars ord abc) ;
       cur_v#set_label vars.(ord)
 
     method set_refresh f = refresh <- (fun () -> self#set_vars () ; f ())
@@ -71,21 +76,27 @@ class toolbar ~width ~hpack ~vpack () =
       ignore
         (prev_var_h#connect#clicked ~callback:(fun () ->
              abc <- (Array.length vars + abc - 1) mod Array.length vars ;
+             if abc = ord then
+               abc <- (Array.length vars + abc - 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
              refresh () ) ) ;
       ignore
         (next_var_h#connect#clicked ~callback:(fun () ->
              abc <- (abc + 1) mod Array.length vars ;
+             if abc = ord then abc <- (abc + 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
              refresh () ) ) ;
       ignore
         (prev_var_v#connect#clicked ~callback:(fun () ->
              ord <- (Array.length vars + ord - 1) mod Array.length vars ;
+             if abc = ord then
+               ord <- (Array.length vars + ord - 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
              refresh () ) ) ;
       ignore
         (next_var_v#connect#clicked ~callback:(fun () ->
              ord <- (ord + 1) mod Array.length vars ;
+             if abc = ord then ord <- (ord + 1) mod Array.length vars ;
              render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
              refresh () ) ) ;
       ()

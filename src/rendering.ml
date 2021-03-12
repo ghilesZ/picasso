@@ -125,9 +125,18 @@ let denormalize u =
 
 (* convex hull computation *)
 let to_vertice r e =
-  Apol.to_generator_list e
-  |> List.rev_map (fun g -> G.to_vertices2D_s g r.abciss r.ordinate)
-  |> Geometry.hull
+  let gl = Apol.to_generator_list e in
+  if r.abciss = r.ordinate then
+    List.rev_map
+      (fun g ->
+        let f =
+          G.get_coeff g (Apron.Var.of_string r.abciss) |> Coeffext.to_float
+        in
+        (f, f) )
+      gl
+  else
+    List.rev_map (fun g -> G.to_vertices2D_s g r.abciss r.ordinate) gl
+    |> Geometry.hull
 
 (* computes the union of environments of all variables *)
 let get_vars r =
@@ -135,10 +144,9 @@ let get_vars r =
     (fun acc (_, elm) -> E.join acc (Apol.get_environment elm))
     E.empty r.elems
 
-(* TODO: memoization according to projection variables. changes the
-   projection variables. if those are different from the previous ones we: -
-   compute the hull for bounded elements - project the unbounded ones on the
-   specified variables *)
+(* Changes the projection variables. if those are different from the previous
+   ones we: - compute the hull for bounded elements - project the unbounded
+   ones on the specified variables *)
 let set_proj_vars r v1 v2 =
   let r = {r with abciss= v1; ordinate= v2} in
   let bounded, unbounded =
@@ -163,8 +171,8 @@ let abstract_screen r =
 
 let to_vertices r =
   let norm = normalize r in
-  let screen = abstract_screen r in
   let r = set_proj_vars r r.abciss r.ordinate in
+  let screen = abstract_screen r in
   List.fold_left
     (fun acc (c, e) ->
       let interscreen = Apol.meet e screen in

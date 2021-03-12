@@ -123,18 +123,14 @@ module Make (D : Backend.T) = struct
       [(vx +. th, vy); (vx -. th, vy); (vx' -. th, vy'); (vx' +. th, vy')]
     in
     fill_poly gray (List.rev_map (fun (x, y) -> (x, y)) thick_line) ;
-    let minibar_size = 6. in
+    let mb_size = 6. in
     let fx cur =
       let x, _ = normalize r (cur, down) in
-      draw_line ~dashed:false gray
-        (x, hy -. minibar_size)
-        (x, hy +. minibar_size)
+      draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size)
     in
     let fy cur =
       let _, y = normalize r (left, cur) in
-      draw_line ~dashed:false gray
-        (vx -. minibar_size, y)
-        (vx +. minibar_size, y)
+      draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y)
     in
     graduation 0.5 fx fy r ;
     (* vetrtical coordinates *)

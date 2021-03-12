@@ -1,3 +1,7 @@
+- add variable selection for axes with gtk
+- add color for obj generation
+- show now generate a svg file when none of graphics and lablgtk are installed
+
 on 29 Jan release of v0.2 
 - add '~dashed' arg for line drawing functions in backends
 - add 'show' function
