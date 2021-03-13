@@ -33,7 +33,7 @@ let prev_v vars i j =
   if i = j then vars.((Array.length vars + i - 1) mod Array.length vars)
   else vars.(i)
 
-class toolbar ~width ~hpack ~vpack () =
+class toolbar ~width ~height ~hpack ~vpack () =
   let tb_h = GPack.hbox ~height:40 ~width:(width - 40) ~packing:hpack () in
   let prev_var_h = button ~packing:tb_h#add () in
   let _lab = GMisc.label ~packing:tb_h#add () in
@@ -41,14 +41,15 @@ class toolbar ~width ~hpack ~vpack () =
   let cur_h = GMisc.label ~packing:tb_h#add () in
   let _lab = GMisc.label ~packing:tb_h#add () in
   let next_var_h = button ~packing:tb_h#add () in
-  let tb_v = GPack.vbox ~packing:vpack ~width:40 () in
+  let tb_v0 = GPack.vbox ~packing:vpack ~width:40 ~height () in
+  let tb_v = GPack.vbox ~packing:tb_v0#add ~height:(height - 40) () in
   let prev_var_v = button ~packing:tb_v#add () in
   let _lab = GMisc.label ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v#add ~text:"Y axis: " () in
+  let _lab = GMisc.label ~packing:tb_v#add ~text:"    Y\n axis: " () in
   let cur_v = GMisc.label ~packing:tb_v#add () in
   let _lab = GMisc.label ~packing:tb_v#add () in
   let next_var_v = button ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v#add ~height:40 () in
+  let _lab = GMisc.label ~packing:tb_v0#add () in
   object (self)
     val mutable abc = 0
 
@@ -102,7 +103,7 @@ class toolbar ~width ~hpack ~vpack () =
       ()
   end
 
-let toolbar ~width ~hpack = new toolbar ~width ~hpack ()
+let toolbar ~width ~height ~hpack = new toolbar ~height ~width ~hpack ()
 
 class clickable ~packing ~width ~height () =
   (* Create the containing vbox. *)
@@ -391,7 +392,7 @@ let build render =
   let hbox = GPack.hbox ~width ~packing:window#add () in
   let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
   let c = create_canvas ~packing:vbox#add ~height:(height - 30) ~width in
-  let tb = toolbar ~width ~hpack:vbox#add ~vpack:hbox#add in
+  let tb = toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add in
   let render = ref render in
   c#set_render render ;
   tb#set_render render ;
