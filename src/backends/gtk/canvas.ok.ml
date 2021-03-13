@@ -6,16 +6,16 @@ open Geometry
 open GButton
 
 let array_var render =
-  let open Apronext in
-  let env = Rendering.get_vars render in
-  let arr = Array.make (Environmentext.size env) "" in
-  let cpt = ref 0 in
-  Environmentext.iter
+  let open Apronext.Environmentext in
+  let e = Rendering.get_vars render in
+  let a = Array.make (size e) "" in
+  let i = ref 0 in
+  iter
     (fun v ->
-      arr.(!cpt) <- Apron.Var.to_string v ;
-      incr cpt )
-    env ;
-  arr
+      a.(!i) <- Apron.Var.to_string v ;
+      incr i )
+    e ;
+  a
 
 let find_index arr v =
   let exception Found of int in
@@ -25,31 +25,42 @@ let find_index arr v =
   with Found i -> Some i
 
 let next_v vars i j =
-  let i = (i + 1) mod Array.length vars in
-  if i = j then vars.((i + 1) mod Array.length vars) else vars.(i)
+  let len = Array.length vars in
+  let i = (i + 1) mod len in
+  if i = j then vars.((i + 1) mod len) else vars.(i)
 
 let prev_v vars i j =
-  let i = (Array.length vars + i - 1) mod Array.length vars in
-  if i = j then vars.((Array.length vars + i - 1) mod Array.length vars)
-  else vars.(i)
+  let len = Array.length vars in
+  let i = (len + i - 1) mod len in
+  if i = j then vars.((len + i - 1) mod len) else vars.(i)
+
+let layout ~packing ~size ~orientation nb =
+  let cell_size = size / nb in
+  match orientation with
+  | `V ->
+      let box = GPack.vbox ~height:size ~packing () in
+      Array.init nb (fun _ ->
+          GPack.vbox ~height:cell_size ~packing:box#add () )
+  | `H ->
+      let box = GPack.hbox ~width:size ~packing () in
+      Array.init nb (fun _ ->
+          GPack.hbox ~width:cell_size ~packing:box#add () )
 
 class toolbar ~width ~height ~hpack ~vpack () =
-  let tb_h = GPack.hbox ~height:40 ~width:(width - 40) ~packing:hpack () in
-  let prev_var_h = button ~packing:tb_h#add () in
-  let _lab = GMisc.label ~packing:tb_h#add () in
-  let _lab = GMisc.label ~packing:tb_h#add ~text:"X axis: " () in
-  let cur_h = GMisc.label ~packing:tb_h#add () in
-  let _lab = GMisc.label ~packing:tb_h#add () in
-  let next_var_h = button ~packing:tb_h#add () in
-  let tb_v0 = GPack.vbox ~packing:vpack ~width:40 ~height () in
-  let tb_v = GPack.vbox ~packing:tb_v0#add ~height:(height - 40) () in
-  let prev_var_v = button ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v#add ~text:"    Y\n axis: " () in
-  let cur_v = GMisc.label ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v#add () in
-  let next_var_v = button ~packing:tb_v#add () in
-  let _lab = GMisc.label ~packing:tb_v0#add () in
+  (* horizontal toolbar *)
+  let tb_h = layout ~packing:hpack ~size:(width - 40) ~orientation:`H 6 in
+  let prev_var_h = button ~packing:tb_h.(0)#add () in
+  let _ = GMisc.label ~packing:tb_h.(2)#add ~text:"X axis: " () in
+  let cur_h = GMisc.label ~packing:tb_h.(3)#add () in
+  let next_var_h = button ~packing:tb_h.(5)#add () in
+  (* vertical toolbar *)
+  let v0 = GPack.vbox ~height ~packing:vpack () in
+  let tb_v = layout ~packing:v0#add ~size:(height - 40) 6 ~orientation:`V in
+  let _lab = GMisc.label ~packing:v0#add () in
+  let prev_var_v = button ~packing:tb_v.(0)#add () in
+  let _ = GMisc.label ~packing:tb_v.(2)#add ~text:"\tY\n axis: " () in
+  let cur_v = GMisc.label ~packing:tb_v.(3)#add () in
+  let next_var_v = button ~packing:tb_v.(5)#add () in
   object (self)
     val mutable abc = 0
 
@@ -67,46 +78,44 @@ class toolbar ~width ~height ~hpack ~vpack () =
       prev_var_v#set_label (prev_v vars ord abc) ;
       cur_v#set_label vars.(ord)
 
-    method set_refresh f = refresh <- (fun () -> self#set_vars () ; f ())
-
-    method set_render (render : Rendering.t ref) =
+    method init (render : Rendering.t ref) refresh =
       vars <- array_var !render ;
       abc <- find_index vars !render.abciss |> Option.get ;
       ord <- find_index vars !render.ordinate |> Option.get ;
       self#set_vars () ;
+      let len = Array.length vars in
+      let update () =
+        render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
+        self#set_vars () ;
+        refresh ()
+      in
       ignore
         (prev_var_h#connect#clicked ~callback:(fun () ->
-             abc <- (Array.length vars + abc - 1) mod Array.length vars ;
-             if abc = ord then
-               abc <- (Array.length vars + abc - 1) mod Array.length vars ;
-             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             refresh () ) ) ;
+             abc <- (len + abc - 1) mod len ;
+             if abc = ord then abc <- (len + abc - 1) mod len ;
+             update () ) ) ;
       ignore
         (next_var_h#connect#clicked ~callback:(fun () ->
-             abc <- (abc + 1) mod Array.length vars ;
-             if abc = ord then abc <- (abc + 1) mod Array.length vars ;
-             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             refresh () ) ) ;
+             abc <- (abc + 1) mod len ;
+             if abc = ord then abc <- (abc + 1) mod len ;
+             update () ) ) ;
       ignore
         (prev_var_v#connect#clicked ~callback:(fun () ->
-             ord <- (Array.length vars + ord - 1) mod Array.length vars ;
-             if abc = ord then
-               ord <- (Array.length vars + ord - 1) mod Array.length vars ;
-             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             refresh () ) ) ;
+             ord <- (len + ord - 1) mod len ;
+             if abc = ord then ord <- (len + ord - 1) mod len ;
+             update () ) ) ;
       ignore
         (next_var_v#connect#clicked ~callback:(fun () ->
-             ord <- (ord + 1) mod Array.length vars ;
-             if abc = ord then ord <- (ord + 1) mod Array.length vars ;
-             render := Rendering.set_proj_vars !render vars.(abc) vars.(ord) ;
-             refresh () ) ) ;
+             ord <- (ord + 1) mod len ;
+             if abc = ord then ord <- (ord + 1) mod len ;
+             update () ) ) ;
       ()
   end
 
 let toolbar ~width ~height ~hpack = new toolbar ~height ~width ~hpack ()
 
 class clickable ~packing ~width ~height () =
-  (* Create the containing vbox. *)
+  (* Create the drawing_area. *)
   let da = GMisc.drawing_area ~width ~height ~packing () in
   let drawable = lazy (new GDraw.drawable da#misc#window) in
   let mc = Gdk.Cursor.create `ARROW in
@@ -120,13 +129,18 @@ class clickable ~packing ~width ~height () =
 
     val mutable tolerance = 900.
 
-    val mutable old_right = None
+    val mutable old : point option = None
 
-    val mutable old_left = None
+    method private set_moving (x, y) = old <- Some (x, y)
 
-    method private set_moving_left (x, y) = old_left <- Some (x, y)
+    method private unset_moving () = old <- None
 
-    method private unset_moving_left () = old_left <- None
+    method private cb f c =
+      let p = GdkEvent.Button.(x c, y c) in
+      ( match GdkEvent.Button.button c with
+      | 1 -> f (self#get_coord p)
+      | _ -> () ) ;
+      false
 
     method get_drawable () =
       try Lazy.force drawable
@@ -143,53 +157,39 @@ class clickable ~packing ~width ~height () =
              f (self#get_drawable ())#size ;
              false ) )
 
-    method private press f_left =
+    method private press f =
       ignore
-        (da#event#connect#button_press ~callback:(fun c ->
-             let x, y = (GdkEvent.Button.x c, GdkEvent.Button.y c) in
-             let w = da#misc#window in
-             ( match GdkEvent.Button.button c with
-             | 1 ->
-                 self#set_moving_left (x, y) ;
-                 Gdk.Window.set_cursor w oc ;
-                 f_left (self#get_coord (x, y))
-             | _ -> () ) ;
-             false ) )
+        (da#event#connect#button_press
+           ~callback:
+             (self#cb (fun p ->
+                  self#set_moving p ;
+                  Gdk.Window.set_cursor da#misc#window oc ;
+                  f p ) ) )
 
-    method private click f_left =
+    method private click f =
+      ignore (da#event#connect#button_press ~callback:(self#cb f))
+
+    method private release f =
       ignore
-        (da#event#connect#button_press ~callback:(fun c ->
-             let x, y = (GdkEvent.Button.x c, GdkEvent.Button.y c) in
-             ( match GdkEvent.Button.button c with
-             | 1 -> f_left (self#get_coord (x, y))
-             | _ -> () ) ;
-             false ) )
+        (da#event#connect#button_release
+           ~callback:
+             (self#cb (fun p ->
+                  self#unset_moving () ;
+                  Gdk.Window.set_cursor da#misc#window mc ;
+                  f p ) ) )
 
-    method private release f_left =
-      ignore
-        (da#event#connect#button_release ~callback:(fun c ->
-             let x, y = (GdkEvent.Button.x c, GdkEvent.Button.y c) in
-             let w = da#misc#window in
-             ( match GdkEvent.Button.button c with
-             | 1 ->
-                 self#unset_moving_left () ;
-                 Gdk.Window.set_cursor w mc ;
-                 f_left (self#get_coord (x, y))
-             | _ -> () ) ;
-             false ) )
-
-    method private drag (f_left : point -> point -> unit) =
+    method private drag (f : point -> point -> unit) =
       ignore
         (da#event#connect#motion_notify ~callback:(fun c ->
              let ((x, y) as p1) =
                (GdkEvent.Motion.x c, GdkEvent.Motion.y c)
              in
-             ( match old_left with
-             | None -> ()
-             | Some ((a, b) as p2) ->
+             Option.iter
+               (fun ((a, b) as p2) ->
                  if sq_dist p1 p2 >= tolerance then (
-                   f_left (self#get_coord (a, b)) (self#get_coord (x, y)) ;
-                   self#set_moving_left (x, y) ) ) ;
+                   f (self#get_coord (a, b)) (self#get_coord (x, y)) ;
+                   self#set_moving (x, y) ) )
+               old ;
              false ) )
 
     method private scrollwheel (fscroll : Gdk.Tags.scroll_direction -> unit)
@@ -216,34 +216,7 @@ module Gtkcanvas = struct
 
   let drawable = ref (None : GDraw.drawable option)
 
-  let font = ref None
-
-  (* text font loading *)
-  let load_font () =
-    let font_list =
-      [ "-misc-fixed-medium-r-*-*-*-130-*-*-*-*-iso8859-1"
-      ; "-schumacher-clean-medium-r-normal--6-140-75-75-c-60-iso646.1991-irv"
-      ; "-bitstream-courier 10 \
-         pitch-bold-r-normal--0-0-0-0-m-0-adobe-standard"
-      ; "rk24"
-      ; "10x20" ]
-    in
-    let fontname = ref "" in
-    let exception FontFound of Gdk.font in
-    try
-      List.iter
-        (fun fn ->
-          match Gdk.Font.load fn with
-          | f ->
-              fontname := fn ;
-              raise (FontFound f)
-          | exception Gpointer.Null -> () )
-        font_list
-    with FontFound f -> font := Some f
-
-  let set_drawable d =
-    load_font () ;
-    drawable := Some d
+  let set_drawable d = drawable := Some d
 
   let get_drawable () =
     try Option.get !drawable
@@ -285,24 +258,6 @@ module Gtkcanvas = struct
     | `Center ->
         drawable#put_layout ~x:(x - (width / 2)) ~y ?fore ?back layout
     | `Right -> drawable#put_layout ~x:(x - width) ~y ?fore ?back layout
-
-  (* Draw text left, centre or right justified at point. (x,y) point is
-     either top left, top middle or top right of text. *)
-  (* let draw_text col position p text =
-   *   let x, y = to_int_point p in
-   *   match !font with
-   *   | Some font -> (
-   *       let drawable = get_drawable () in
-   *       drawable#set_foreground col ;
-   *       let w = Gdk.Font.string_width font text in
-   *       let h = Gdk.Font.string_height font text in
-   *       match position with
-   *       | `Left -> drawable#string text ~font ~x ~y:(y + h)
-   *       | `Center -> drawable#string text ~font ~x:(x - (w / 2)) ~y:(y + h)
-   *       | `Right -> drawable#string text ~font ~x:(x - w) ~y:(y + h) )
-   *   | None ->
-   *       Format.eprintf "Picasso: no font found\n" ;
-   *       () *)
 
   let draw_line ~dashed col a b =
     let ax, ay = to_int_point a in
@@ -395,7 +350,6 @@ let build render =
   let tb = toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add in
   let render = ref render in
   c#set_render render ;
-  tb#set_render render ;
-  tb#set_refresh (fun () -> c#repaint ()) ;
+  tb#init render (fun () -> c#repaint ()) ;
   window#show () ;
   GMain.Main.main ()
