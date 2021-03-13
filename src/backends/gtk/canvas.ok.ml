@@ -1,7 +1,6 @@
-open Tools
+(* Drawing area wrapper that handles events and build the gui *)
 
-(* This module is a drawing area wrapper that handles mouse events and expose
-   event *)
+open Tools
 open Geometry
 open GButton
 
@@ -111,8 +110,6 @@ class toolbar ~width ~height ~hpack ~vpack () =
              update () ) ) ;
       ()
   end
-
-let toolbar ~width ~height ~hpack = new toolbar ~height ~width ~hpack ()
 
 class clickable ~packing ~width ~height () =
   (* Create the drawing_area. *)
@@ -330,10 +327,6 @@ class canvas ~packing ~width ~height () =
       ()
   end
 
-(* constructor *)
-let create_canvas ~packing ~height ~width =
-  new canvas ~packing ~height ~width ()
-
 (* building the main view *)
 let build render =
   let open Rendering in
@@ -346,8 +339,8 @@ let build render =
   window#event#add [`ALL_EVENTS] ;
   let hbox = GPack.hbox ~width ~packing:window#add () in
   let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
-  let c = create_canvas ~packing:vbox#add ~height:(height - 30) ~width in
-  let tb = toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add in
+  let c = new canvas ~packing:vbox#add ~height:(height - 30) ~width () in
+  let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
   let render = ref render in
   c#set_render render ;
   tb#init render (fun () -> c#repaint ()) ;
