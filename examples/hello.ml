@@ -17,7 +17,9 @@ let oct = Aoct.of_generator_list gens |> Drawable.of_oct
 let box = Abox.of_generator_list gens |> Drawable.of_box
 
 let _ =
-  let r = Rendering.create ~abciss:"x1" ~ordinate:"x" ~title:"Test" 800. 800. in
+  let r =
+    Rendering.create ~abciss:"x1" ~ordinate:"x2" ~title:"Test" 800. 800.
+  in
   let r = Rendering.add_l r [(blue, pol); (red, oct); (green, box)] in
   to_svg r "file.svg" ;
   to_latex ~tikz_only:false r "file.tex" ;

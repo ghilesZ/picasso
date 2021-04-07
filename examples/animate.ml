@@ -14,6 +14,14 @@ let pol = Apol.of_generator_list gens
 
 let () =
   let down, up = Apol.bound_variable_fs pol "x2" in
-  let _step = (up -. down) /. 100. in
-  let _cut _i = assert false in
-  ()
+  let step = (up -. down) /. 100. in
+  let r =
+    Rendering.create ~axis:false ~grid:false ~abciss:"x1" ~ordinate:"x3"
+      ~title:"Test" 800. 800.
+  in
+  let to_render i =
+    let p = Apol.assign_fs pol "x2" (down +. (i *. step)) |> Drawable.of_pol in
+    Rendering.add ~autofit:false r (blue, p)
+  in
+  let next = ( +. ) step in
+  in_gtk_animated down next to_render

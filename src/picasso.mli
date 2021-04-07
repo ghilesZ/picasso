@@ -177,23 +177,22 @@ val in_graphics_canvas : Rendering.t -> unit
 (** {1 Animations} *)
 
 val show_animated :
-  ?max_step:int -> (Rendering.t -> Rendering.t) -> Rendering.t -> unit
+  ?max_step:int -> 'a -> ('a -> 'a) -> ('a -> Rendering.t) -> unit
 (** Displays that evolves in time following the function *)
 
 val to_svg_animated :
-  int -> (Rendering.t -> Rendering.t) -> Rendering.t -> string -> unit
+  int -> 'a -> ('a -> 'a) -> ('a -> Rendering.t) -> string -> unit
 (** [to_svg_animated n f r] outputs [n] svg files with a figure corresponding
     to [r], [f r], [f (f r)], ... [f^n r] *)
 
 (** {2 Backend specific animations functions}*)
 
-val in_gtk_animated : (Rendering.t -> Rendering.t) -> Rendering.t -> unit
+val in_gtk_animated : 'a -> ('a -> 'a) -> ('a -> Rendering.t) -> unit
 (** todo
 
     @raise BackendError if the lablgtk library is not installed *)
 
-val in_graphics_animated :
-  (Rendering.t -> Rendering.t) -> Rendering.t -> unit
+val in_graphics_animated : 'a -> ('a -> 'a) -> ('a -> Rendering.t) -> unit
 (** todo .
 
     @raise BackendError if the graphics library is not installed *)

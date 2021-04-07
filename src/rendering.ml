@@ -107,7 +107,7 @@ let focus r =
     r.elems
     |> List.fold_left
          (fun acc (_, e) ->
-           try Apol.bound_variable_s e v |> join acc with Failure _ -> acc )
+           try Apol.bound_variable_s e v |> join acc with Failure _ -> acc)
          bottom
     |> to_float
   in
@@ -145,7 +145,7 @@ let to_vertice r e =
         let f =
           G.get_coeff g (Apron.Var.of_string r.abciss) |> Coeffext.to_float
         in
-        (f, f) )
+        (f, f))
       gl
   else
     List.rev_map (fun g -> G.to_vertices2D_s g r.abciss r.ordinate) gl
@@ -167,7 +167,7 @@ let set_proj_vars r v1 v2 =
       (fun (b, u) (c, pol) ->
         let p2d = Apol.proj2D_s pol v1 v2 in
         if Apol.is_bounded p2d then ((c, to_vertice r p2d) :: b, u)
-        else (b, (c, p2d) :: u) )
+        else (b, (c, p2d) :: u))
       ([], []) r.elems
   in
   focus {r with bounded; unbounded}
@@ -183,13 +183,18 @@ let abstract_screen r =
   |> List.rev_map to_gens |> Apol.of_generator_list
 
 let to_vertices r =
+  Format.printf "Entering to_vertices\n%!" ;
   let norm = normalize r in
   let r = set_proj_vars r r.abciss r.ordinate in
   let screen = abstract_screen r in
-  List.fold_left
-    (fun acc (c, e) ->
-      let interscreen = Apol.meet e screen in
-      if Apol.is_bottom interscreen then acc
-      else (c, to_vertice r interscreen) :: acc )
-    r.bounded r.unbounded
-  |> List.rev_map (fun (c, h) -> (c, List.rev_map norm h))
+  let res =
+    List.fold_left
+      (fun acc (c, e) ->
+        let interscreen = Apol.meet e screen in
+        if Apol.is_bottom interscreen then acc
+        else (c, to_vertice r interscreen) :: acc)
+      r.bounded r.unbounded
+    |> List.rev_map (fun (c, h) -> (c, List.rev_map norm h))
+  in
+  Format.printf "Exiting to_vertices\n%!" ;
+  res

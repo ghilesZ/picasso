@@ -338,7 +338,7 @@ class canvas ~packing ~width ~height () =
 (* building the main view. step is a function of type Rendering.t ->
    Rendering.t , linked to the event key press "n" for "next". Useful to
    build animations *)
-let build ?step render =
+let build render =
   let open Rendering in
   GtkMain.Main.init () |> ignore ;
   let width = render.window.sx |> iof in
@@ -352,18 +352,37 @@ let build ?step render =
   let c = new canvas ~packing:vbox#add ~height:(height - 30) ~width () in
   let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
   let render = ref render in
-  ( match step with
-  | None -> ()
-  | Some f ->
-      ignore
-        (window#event#connect#key_press ~callback:(fun k ->
-             match GdkEvent.Key.string k with
-             | "n" ->
-                 render := f !render ;
-                 c#repaint () ;
-                 false
-             | _ -> false)) ) ;
   c#set_render render ;
   tb#init render (fun () -> c#repaint ()) ;
+  window#show () ;
+  GMain.Main.main ()
+
+let build_animate state step to_render =
+  let open Rendering in
+  GtkMain.Main.init () |> ignore ;
+  let render = to_render state in
+  let width = render.window.sx |> iof in
+  let height = render.window.sy |> iof in
+  let title = Option.value render.window.title ~default:"Picasso" in
+  let window = GWindow.window ~width ~height ~title () in
+  window#connect#destroy ~callback:GMain.Main.quit |> ignore ;
+  window#event#add [`ALL_EVENTS] ;
+  let hbox = GPack.hbox ~width ~packing:window#add () in
+  let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
+  let c = new canvas ~packing:vbox#add ~height:(height - 30) ~width () in
+  let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
+  let s = ref state in
+  let render = ref render in
+  c#set_render render ;
+  tb#init render (fun () -> c#repaint ()) ;
+  ignore
+    (window#event#connect#key_press ~callback:(fun k ->
+         match GdkEvent.Key.string k with
+         | "n" ->
+             s := step !s ;
+             render := to_render !s ;
+             c#repaint () ;
+             false
+         | _ -> false)) ;
   window#show () ;
   GMain.Main.main ()

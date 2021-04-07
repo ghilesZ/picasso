@@ -157,6 +157,7 @@ module Make (D : Backend.T) = struct
 
   (* main drawing function *)
   let draw r =
+    Format.printf "Entering draw\n%!" ;
     let open Rendering in
     x_min := r.scene.x_min ;
     x_max := r.scene.x_max ;
@@ -165,5 +166,6 @@ module Make (D : Backend.T) = struct
     r |> to_vertices
     |> List.iter (fun ((r, g, b), e) -> polygon (D.rgb r g b) e) ;
     if r.grid then draw_grid r ;
-    if r.axis then draw_axes r
+    if r.axis then draw_axes r ;
+    Format.printf "Exiting draw\n%!"
 end

@@ -1,4 +1,4 @@
-include Drawer.Make(Svgcanvas)
+include Drawer.Make (Svgcanvas)
 
 let set_output out =
   let oc = open_out out in
@@ -6,8 +6,10 @@ let set_output out =
   Svgcanvas.output := Some fmt
 
 let output render filename =
+  Format.printf "Entering output\n%!" ;
   let open Rendering in
-  Svgcanvas.init render.window.sx render.window.sy filename;
-  fill_poly white (screen());
-  draw render;
-  Svgcanvas.ending()
+  Svgcanvas.init render.window.sx render.window.sy filename ;
+  fill_poly white (screen ()) ;
+  draw render ;
+  Svgcanvas.ending () ;
+  Format.printf "Exiting output\n%!"
