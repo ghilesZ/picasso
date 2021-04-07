@@ -43,7 +43,7 @@ let to_svg_animated nb step render name =
   in
   loop 0 render
 
-let show_animated ?max_step:(max = 10) step render =
+let show_animated ?max_step:(max = 100) step render =
   try in_gtk_animated step render
   with BackendError s1 -> (
     try in_graphics_animated step render

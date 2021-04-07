@@ -1,4 +1,4 @@
-(executable
-  (name hello)
+(executables
+  (names hello animate)
   (libraries picasso)
 )
