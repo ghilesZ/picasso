@@ -30,7 +30,6 @@ let show render =
             (Option.value render.window.title ~default:"picasso")
             ".svg") )
 
-(* Build animations *)
 let in_gtk_animated = Canvas.build_animate
 
 let in_graphics_animated _state _step _to_render = ()
@@ -38,8 +37,6 @@ let in_graphics_animated _state _step _to_render = ()
 let to_svg_animated nb state step to_render name =
   let rec loop cur s =
     if cur < nb then (
-      Format.printf "iteration %i\n%!" cur ;
-      Format.printf "outputing svg ...%!" ;
       to_svg (to_render s) (Format.asprintf "%s_%i" name nb) ;
       Format.printf "done\n%!" ;
       loop (cur + 1) (step s) )

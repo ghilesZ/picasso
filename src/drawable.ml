@@ -32,7 +32,11 @@ let of_ranges vars ranges =
   let itv = Array.map (fun (l, u) -> Apron.Interval.of_float l u) itvf in
   [Abox.of_box env (Array.map Apron.Var.of_string vars) itv |> Abox.to_poly]
 
-let union : t -> t -> t = List.rev_append
+let merge l = List.fold_left (fun acc e -> List.rev_append e acc) [] l
+
+let union l1 l2 =
+  (* this order is more likely to behave well in a fold_left *)
+  List.rev_append l2 l1
 
 let product x y =
   List.fold_left
@@ -47,11 +51,13 @@ let product x y =
 let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
   | [] -> invalid_arg "should be non empty"
   | h :: tl ->
-      let i1 = Apol.bound_variable_s h v1 in
-      let i2 = Apol.bound_variable_s h v2 in
+      let v1 = Apron.Var.of_string v1 in
+      let v2 = Apron.Var.of_string v2 in
+      let i1 = Apol.bound_variable h v1 in
+      let i2 = Apol.bound_variable h v2 in
       List.fold_left
         (fun (i1, i2) p ->
-          let i1' = Apol.bound_variable_s p v1 in
-          let i2' = Apol.bound_variable_s p v2 in
+          let i1' = Apol.bound_variable p v1 in
+          let i2' = Apol.bound_variable p v2 in
           (Intervalext.join i1 i1', Intervalext.join i2 i2'))
         (i1, i2) tl

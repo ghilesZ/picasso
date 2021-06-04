@@ -79,6 +79,10 @@ module Drawable : sig
   (** Merges two drawable into one drawable, where the elements will be drawn
       one after the other *)
 
+  val merge : t list -> t
+  (** Merges a list of drawable into one drawable, where the elements will be
+      drawn one after the other *)
+
   val product : t -> t -> t
   (** Merges two drawable into one drawable, where only the intersection of
       the elements will be drawn. *)

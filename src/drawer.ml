@@ -79,8 +79,8 @@ module Make (D : Backend.T) = struct
     let open Rendering in
     let sx = render.scene.x_max -. render.scene.x_min in
     let sy = render.scene.y_max -. render.scene.y_min in
-    let xl10 = 10. ** (log10 sx -. 1.) in
-    let yl10 = 10. ** (log10 sy -. 1.) in
+    let xl10 = if sx = 0. then 1. else 10. ** (log10 sx -. 1.) in
+    let yl10 = if sy = 0. then 1. else 10. ** (log10 sy -. 1.) in
     let min_x = floor (render.scene.x_min /. xl10) *. xl10 in
     let min_y = floor (render.scene.y_min /. yl10) *. yl10 in
     Tools.iterate (xline render) min_x (( +. ) xl10)
@@ -157,7 +157,6 @@ module Make (D : Backend.T) = struct
 
   (* main drawing function *)
   let draw r =
-    Format.printf "Entering draw\n%!" ;
     let open Rendering in
     x_min := r.scene.x_min ;
     x_max := r.scene.x_max ;
@@ -166,6 +165,5 @@ module Make (D : Backend.T) = struct
     r |> to_vertices
     |> List.iter (fun ((r, g, b), e) -> polygon (D.rgb r g b) e) ;
     if r.grid then draw_grid r ;
-    if r.axis then draw_axes r ;
-    Format.printf "Exiting draw\n%!"
+    if r.axis then draw_axes r
 end

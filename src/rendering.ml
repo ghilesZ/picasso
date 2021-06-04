@@ -99,7 +99,9 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   else r
 
 let add_l ?autofit:(auto = true) r drawables =
-  List.fold_left (add ~autofit:auto) r drawables
+  Format.printf "Adding element to scene\n%!" ;
+  let r = List.fold_left (add ~autofit:auto) r drawables in
+  Format.printf "done\n%!" ; r
 
 let focus r =
   let open Intervalext in
@@ -162,15 +164,21 @@ let get_vars r =
    ones on the specified variables *)
 let set_proj_vars r v1 v2 =
   let r = {r with abciss= v1; ordinate= v2} in
+  let v1 = Apron.Var.of_string v1 in
+  let v2 = Apron.Var.of_string v2 in
+  Format.printf "Split bound from unbound\n%!" ;
   let bounded, unbounded =
     List.fold_left
       (fun (b, u) (c, pol) ->
-        let p2d = Apol.proj2D_s pol v1 v2 in
+        let p2d = Apol.proj2D pol v1 v2 in
         if Apol.is_bounded p2d then ((c, to_vertice r p2d) :: b, u)
         else (b, (c, p2d) :: u))
       ([], []) r.elems
   in
-  focus {r with bounded; unbounded}
+  Format.printf "done\n%!" ;
+  Format.printf "Set focus\n%!" ;
+  let r = focus {r with bounded; unbounded} in
+  Format.printf "done\n%!" ; r
 
 (* TODO: recompute screen only when the window changes size and when
    projection variables are changed *)
@@ -185,16 +193,17 @@ let abstract_screen r =
 let to_vertices r =
   Format.printf "Entering to_vertices\n%!" ;
   let norm = normalize r in
+  Format.printf "Setting projection variables\n%!" ;
   let r = set_proj_vars r r.abciss r.ordinate in
+  Format.printf "done\n%!" ;
   let screen = abstract_screen r in
   let res =
     List.fold_left
       (fun acc (c, e) ->
         let interscreen = Apol.meet e screen in
         if Apol.is_bottom interscreen then acc
-        else (c, to_vertice r interscreen) :: acc)
+        else (c, to_vertice r interscreen |> List.rev_map norm) :: acc)
       r.bounded r.unbounded
-    |> List.rev_map (fun (c, h) -> (c, List.rev_map norm h))
   in
   Format.printf "Exiting to_vertices\n%!" ;
   res

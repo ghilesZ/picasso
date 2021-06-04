@@ -4,7 +4,7 @@ let foi = float_of_int
 
 let iof = int_of_float
 
-(** removes ending zeros of a string *)
+(* removes ending zeros of a string *)
 let trail_ending_zeros str =
   let len = String.length str in
   let rec aux cpt i =
@@ -25,8 +25,12 @@ let pp_float fmt f =
   else Format.fprintf fmt "%s" (trail_ending_zeros (Format.asprintf "%f" f))
 
 let iterate f x0 next until =
-  let rec loop () cur = if not (until cur) then loop (f cur) (next cur) in
-  loop () x0
+  let rec loop cur =
+    if not (until cur) then (
+      f cur ;
+      loop (next cur) )
+  in
+  loop x0
 
 (* helper : project from a value n from [a;b] to [c;d] *)
 let projection (a, b) (c, d) n =
