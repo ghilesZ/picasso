@@ -30,15 +30,25 @@ module).
 
 ## Dependencies and build
 Picasso can use different graphical library without imposing heavy
-dependencies for the end-user. It uses the [opam optional dependency](https://opam.ocaml.org/doc/1.1/Advanced_Usage.html#Installing-packages)
-feature, along with [dune's alternative dependencies](https://dune.readthedocs.io/en/stable/concepts.html?highlight=select#alternative-deps), to look for available
-graphical library on your system to use those. If none of the graphical library is available, Picasso still generates a .SVG file. Also note that using
-opam while installing a new graphical package, picasso will be
-recompiled automatically make the new library usable.
+dependencies for the end-user. It uses the [opam optional
+dependency](https://opam.ocaml.org/doc/1.1/Advanced_Usage.html#Installing-packages)
+feature, along with [dune's alternative
+dependencies](https://dune.readthedocs.io/en/stable/concepts.html?highlight=select#alternative-deps),
+to look for available graphical library on your system to use
+those. If none of the graphical library is available, Picasso still
+generates a .SVG file. Also note that using opam while installing a
+new graphical package, picasso will be recompiled automatically make
+the new library usable.
 
 ## Current backends include:
-- interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window. It is the prefered way of vizualisation of Picasso. It features scrolling, zooming/unzooming, and dynamic changing of the variables of projection)
+
+- interactive [Gtk](http://lablgtk.forge.ocamlcore.org/) window. It is
+  the prefered way of vizualisation of Picasso. It features scrolling,
+  zooming/unzooming, and dynamic changing of the variables of
+  projection)
 - Non-interractive [graphics](https://github.com/ocaml/graphics) window
 - SVG generation
 - LaTex generation (using TikZ)
-- 3D .obj file generation (you can use [g3dviewer](http://automagically.de/g3dviewer/), among others, to visualize the 3d model)
+- 3D .obj file generation (you can use
+  [g3dviewer](http://automagically.de/g3dviewer/), among others, to
+  visualize the 3d model)

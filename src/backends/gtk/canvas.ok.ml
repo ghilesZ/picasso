@@ -38,12 +38,10 @@ let layout ~packing ~size ~orientation nb =
   match orientation with
   | `V ->
       let box = GPack.vbox ~height:size ~packing () in
-      Array.init nb (fun _ ->
-          GPack.vbox ~height:cell_size ~packing:box#add () )
+      Array.init nb (fun _ -> GPack.vbox ~height:cell_size ~packing:box#add ())
   | `H ->
       let box = GPack.hbox ~width:size ~packing () in
-      Array.init nb (fun _ ->
-          GPack.hbox ~width:cell_size ~packing:box#add () )
+      Array.init nb (fun _ -> GPack.hbox ~width:cell_size ~packing:box#add ())
 
 class toolbar ~width ~height ~hpack ~vpack () =
   (* horizontal toolbar *)
@@ -67,7 +65,7 @@ class toolbar ~width ~height ~hpack ~vpack () =
 
     val mutable vars = [||]
 
-    val mutable refresh = fun () -> ()
+    val mutable refresh = ignore
 
     method set_vars () =
       next_var_h#set_label (next_v vars abc ord) ;
@@ -120,11 +118,10 @@ class clickable ~packing ~width ~height () =
   object (self)
     initializer
     ignore
-      ( da#event#add
-          [`BUTTON_PRESS; `BUTTON_RELEASE; `POINTER_MOTION; `SCROLL] ;
+      ( da#event#add [`BUTTON_PRESS; `BUTTON_RELEASE; `POINTER_MOTION; `SCROLL] ;
         () )
 
-    val mutable tolerance = 900.
+    val mutable tolerance = 900. (* 30. ^ 2. *)
 
     val mutable old : point option = None
 
@@ -134,14 +131,11 @@ class clickable ~packing ~width ~height () =
 
     method private cb f c =
       let p = GdkEvent.Button.(x c, y c) in
-      ( match GdkEvent.Button.button c with
-      | 1 -> f (self#get_coord p)
-      | _ -> () ) ;
+      (match GdkEvent.Button.button c with 1 -> f (self#get_coord p) | _ -> ()) ;
       false
 
     method get_drawable () =
-      try Lazy.force drawable
-      with Gpointer.Null -> failwith "drawable null"
+      try Lazy.force drawable with Gpointer.Null -> failwith "drawable null"
 
     method private get_coord (x, y) =
       (* in gtk y axis is inversed *)
@@ -159,9 +153,9 @@ class clickable ~packing ~width ~height () =
         (da#event#connect#button_press
            ~callback:
              (self#cb (fun p ->
-                  self#set_moving p ;
+                  self#set_moving (self#get_coord p) ;
                   Gdk.Window.set_cursor da#misc#window oc ;
-                  f p ) ) )
+                  f (self#get_coord p) ) ) )
 
     method private click f =
       ignore (da#event#connect#button_press ~callback:(self#cb f))
@@ -178,28 +172,24 @@ class clickable ~packing ~width ~height () =
     method private drag (f : point -> point -> unit) =
       ignore
         (da#event#connect#motion_notify ~callback:(fun c ->
-             let ((x, y) as p1) =
-               (GdkEvent.Motion.x c, GdkEvent.Motion.y c)
-             in
+             let p2 = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
              Option.iter
-               (fun ((a, b) as p2) ->
+               (fun p1 ->
                  if sq_dist p1 p2 >= tolerance then (
-                   f (self#get_coord (a, b)) (self#get_coord (x, y)) ;
-                   self#set_moving (x, y) ) )
+                   f (self#get_coord p1) (self#get_coord p2) ;
+                   self#set_moving p2 ) )
                old ;
              false ) )
 
-    method private scrollwheel (fscroll : Gdk.Tags.scroll_direction -> unit)
-        =
+    method private scrollwheel (fscroll : Gdk.Tags.scroll_direction -> unit) =
       ignore
         (da#event#connect#scroll ~callback:(fun c ->
              fscroll (GdkEvent.Scroll.direction c) ;
              false ) )
 
-    method mouse_set ?expose:(exp = (fun _ -> () : int * int -> unit))
-        ?press:(pl = fun _ -> ()) ?release:(rl = fun _ -> ())
-        ?click:(cl = fun _ -> ()) ?drag:(dl = fun _ _ -> ())
-        ?scrollwheel:(sw = fun _ -> ()) () =
+    method mouse_set ?expose:(exp = ignore) ?press:(pl = ignore)
+        ?release:(rl = ignore) ?click:(cl = ignore) ?drag:(dl = fun _ _ -> ())
+        ?scrollwheel:(sw = ignore) () =
       self#expose exp ;
       self#press pl ;
       self#release rl ;
@@ -238,8 +228,8 @@ module Gtkcanvas = struct
 
   let descr = Pango.Font.from_string "fixed"
 
-  (* Draw text left, centre or right justified at point. (x,y) point is *
-     either top left, top middle or top right of text. *)
+  (* Draw text left, centre or right justified at point. (x,y) point is * either
+     top left, top middle or top right of text. *)
   let draw_text col position p text : unit =
     let x, y = to_int_point p in
     let drawable = get_drawable () in
@@ -252,8 +242,7 @@ module Gtkcanvas = struct
     let fore, back = (None, None) in
     match position with
     | `Left -> drawable#put_layout ~x ~y ?fore ?back layout
-    | `Center ->
-        drawable#put_layout ~x:(x - (width / 2)) ~y ?fore ?back layout
+    | `Center -> drawable#put_layout ~x:(x - (width / 2)) ~y ?fore ?back layout
     | `Right -> drawable#put_layout ~x:(x - width) ~y ?fore ?back layout
 
   let draw_line ~dashed col a b =
@@ -306,8 +295,9 @@ class canvas ~packing ~width ~height () =
         ~expose:(fun (a, b) ->
           render := !render |> Rendering.change_size (float a) (float b) ;
           self#repaint () )
-        ~drag:(fun (a, b) (x, y) ->
-          render := Rendering.translate (x -. a, y -. b) !render ;
+        ~drag:(fun p1 p2 ->
+          let p3 = vector p1 p2 in
+          render := Rendering.translate p3 !render ;
           self#repaint () )
         ~scrollwheel:(fun direction ->
           (render :=

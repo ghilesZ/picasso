@@ -161,7 +161,7 @@ val to_svg : ?filename:string -> Rendering.t -> unit
 val to_obj : ?filename:string -> Rendering3d.t -> unit
 (** Builds an obj file corresponding to a Rendering3D context *)
 
-(** {2 Backend specific drawing functions}*)
+(** {2 Backend specific drawing functions} *)
 
 val in_gtk_canvas : Rendering.t -> unit
 (** Displays a Rendering.t within a scrollable, zoomable gtk canvas.
