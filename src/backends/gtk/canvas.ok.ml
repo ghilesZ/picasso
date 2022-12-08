@@ -121,6 +121,7 @@ class clickable ~packing ~width ~height () =
       ( da#event#add [`BUTTON_PRESS; `BUTTON_RELEASE; `POINTER_MOTION; `SCROLL] ;
         () )
 
+    (* minimum threshold under which we do not trigger the drag event *)
     val mutable tolerance = 900. (* 30. ^ 2. *)
 
     val mutable old : point option = None
@@ -131,7 +132,7 @@ class clickable ~packing ~width ~height () =
 
     method private cb f c =
       let p = GdkEvent.Button.(x c, y c) in
-      (match GdkEvent.Button.button c with 1 -> f (self#get_coord p) | _ -> ()) ;
+      if GdkEvent.Button.button c = 1 then f (self#get_coord p) ;
       false
 
     method get_drawable () =
@@ -333,6 +334,6 @@ let build render =
   let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
   let render = ref render in
   c#set_render render ;
-  tb#init render (fun () -> c#repaint ()) ;
+  tb#init render c#repaint ;
   window#show () ;
   GMain.Main.main ()

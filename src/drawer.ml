@@ -60,8 +60,7 @@ module Make (D : Manager.T) = struct
   let fill_poly = poly D.fill_poly
 
   (* Filled, black-outlined polygon *)
-  let polygon col vertices =
-    fill_poly col vertices ; draw_poly black vertices
+  let polygon col vertices = fill_poly col vertices ; draw_poly black vertices
 
   let xline r cur =
     let open Rendering in
@@ -83,10 +82,8 @@ module Make (D : Manager.T) = struct
     let yl10 = 10. ** (log10 sy -. 1.) in
     let min_x = floor (render.scene.x_min /. xl10) *. xl10 in
     let min_y = floor (render.scene.y_min /. yl10) *. yl10 in
-    Tools.iterate (xline render) min_x (( +. ) xl10)
-      (( < ) render.scene.x_max) ;
-    Tools.iterate (yline render) min_y (( +. ) yl10)
-      (( < ) render.scene.y_max)
+    Tools.iterate (xline render) min_x (( +. ) xl10) (( < ) render.scene.x_max) ;
+    Tools.iterate (yline render) min_y (( +. ) yl10) (( < ) render.scene.y_max)
 
   let graduation rating fx fy render =
     let stepify dim =
@@ -116,13 +113,12 @@ module Make (D : Manager.T) = struct
     let thick_line =
       [(hx, hy +. th); (hx, hy -. th); (hx', hy' -. th); (hx', hy' +. th)]
     in
-    fill_poly gray (List.rev_map (fun (x, y) -> (x, y)) thick_line) ;
-    let vx, vy = normalize r (x0, down)
-    and vx', vy' = normalize r (x0, up) in
+    fill_poly gray thick_line ;
+    let vx, vy = normalize r (x0, down) and vx', vy' = normalize r (x0, up) in
     let thick_line =
       [(vx +. th, vy); (vx -. th, vy); (vx' -. th, vy'); (vx' +. th, vy')]
     in
-    fill_poly gray (List.rev_map (fun (x, y) -> (x, y)) thick_line) ;
+    fill_poly gray thick_line ;
     let mb_size = 6. in
     let fx cur =
       let x, _ = normalize r (cur, down) in
