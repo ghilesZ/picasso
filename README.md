@@ -1,7 +1,7 @@
 # Picasso [![Build Status](https://travis-ci.org/ghilesZ/picasso.svg?branch=master)](https://travis-ci.org/ghilesZ/picasso)
 
 Picasso is an Abstract element drawing library which provides several
-ways of drawing abstract element.
+ways of drawing abstract elements.
 
 Visualization of abstract element poses two practical problems:
 - abstract elements may be unbounded, are generally defined on more than 2 dimensions, thus rendering them in a 2d context can be difficult.

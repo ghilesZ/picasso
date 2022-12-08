@@ -17,23 +17,17 @@ let to_svg = Svg.output
 
 let to_obj = Obj.output
 
-let backends : (Rendering.t -> unit) list = [in_gtk_canvas; in_graphics_canvas; Svg.output]
+let backends : (Rendering.t -> unit) list =
+  [in_gtk_canvas; in_graphics_canvas; Svg.output]
 
 let show render =
   try
-    List.iter (fun f ->
-        try f render; raise Exit
-        with BackendError s -> Format.eprintf "Picasso warning:\n%s" s
-      ) backends
+    List.iter
+      (fun f ->
+        try f render ; raise Exit
+        with BackendError s -> Format.eprintf "Picasso warning:\n%s" s )
+      backends
   with Exit -> ()
-
-(* let show render =
- *   try in_gtk_canvas render
- *   with BackendError s1 -> (
- *     try in_graphics_canvas render
- *     with BackendError s2 ->
- *       Format.eprintf "Picasso warning:\n  %s\n  %s\n" s1 s2 ;
- *       Svg.output render) *)
 
 (* let in_gtk_animated = Canvas.build_animate
  *

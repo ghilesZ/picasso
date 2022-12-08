@@ -63,15 +63,15 @@ module Drawable : sig
   (** Same as of_gens, but build a convex hull from a list of a variables
       defining an environment and a list of points.
 
-      @raise Invalid_arg if one points or more do not have as many dimension
-      as the number of variables*)
+      @raise Invalid_arg
+        if one points or more do not have as many dimension as the number of
+        variables*)
 
   val of_ranges : string list -> range list -> t
-  (** Builds a drawable hypercube from a list of variable and a list of
-      ranges.
+  (** Builds a drawable hypercube from a list of variable and a list of ranges.
 
-      @raise Invalid_arg if the range list and the variable list do not have
-      the same length *)
+      @raise Invalid_arg
+        if the range list and the variable list do not have the same length *)
 
   (** {1 Operations} *)
 
@@ -80,12 +80,12 @@ module Drawable : sig
       one after the other *)
 
   val product : t -> t -> t
-  (** Merges two drawable into one drawable, where only the intersection of
-      the elements will be drawn. *)
+  (** Merges two drawable into one drawable, where only the intersection of the
+      elements will be drawn. *)
 end
 
-(** Module for 2d drawing of abstract elements, handles the 'camera'
-    settings, 2D projection, and some graphical options *)
+(** Module for 2d drawing of abstract elements, handles the 'camera' settings,
+    2D projection, and some graphical options *)
 module Rendering : sig
   (** Type of 2D scenes *)
   type t
@@ -105,8 +105,8 @@ module Rendering : sig
   val add : ?autofit:bool -> t -> Colors.t * Drawable.t -> t
   (** Registers an abstract element, associated to a color, into a scene.
       Automatically changes the camera settings to encompass the newly added
-      abstract element. You can cancel this behaviour by settings the
-      optional argument [autofit] to [false]*)
+      abstract element. You can cancel this behaviour by settings the optional
+      argument [autofit] to [false]*)
 
   val add_l : ?autofit:bool -> t -> (Colors.t * Drawable.t) list -> t
   (** Registers a list of element into a scene. [add_l r l] is equivalent to
@@ -145,20 +145,20 @@ exception BackendError of string
 
 val show : Rendering.t -> unit
 (** Main drawing function. Displays a Rendering.t using one of the backend
-    available. It first tries with gtk, and if lablgtk is not installed,
-    retries using graphics. If none of the backend is installed, outputs a
-    .svg file in the current directory, named after the title of the window
-    if specified, otherwise name "picasso[number].svg" *)
+    available. It first tries with gtk, and if lablgtk is not installed, retries
+    using graphics. If none of the backend is installed, outputs a .svg file in
+    the current directory, named after the title of the window if specified,
+    otherwise name "picasso[number].svg" *)
 
 val to_latex : ?filename:string -> ?tikz_only:bool -> Rendering.t -> unit
-(** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If
-    the tikz_only option is set to false (default is true), it outputs the
-    full tex document and not only the tikz figure *)
+(** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If the
+    tikz_only option is set to false (default is true), it outputs the full tex
+    document and not only the tikz figure *)
 
 val to_svg : ?filename:string -> Rendering.t -> unit
 (** Outputs a svg file with a figure corresponding to a Rendering.t *)
 
-val to_obj : Rendering3d.t -> string -> unit
+val to_obj : ?filename:string -> Rendering3d.t -> unit
 (** Builds an obj file corresponding to a Rendering3D context *)
 
 (** {2 Backend specific drawing functions}*)
@@ -169,7 +169,7 @@ val in_gtk_canvas : Rendering.t -> unit
     @raise BackendError if the lablgtk library is not installed *)
 
 val in_graphics_canvas : Rendering.t -> unit
-(** Displays a Rendering.t within a graphics window. The window created can
-    be exited cleanly by pressing any key.
+(** Displays a Rendering.t within a graphics window. The window created can be
+    exited cleanly by pressing any key.
 
     @raise BackendError if the graphics library is not installed *)

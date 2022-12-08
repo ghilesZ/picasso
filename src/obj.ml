@@ -71,9 +71,15 @@ let output =
 
     let compare = compare
   end) in
-  fun r file ->
+  fun ?filename r ->
     let open Rendering3d in
-    let oc = open_out file in
+    let fn =
+      Filename.(
+        temp_file ~temp_dir:current_dir_name
+          (match filename with Some s -> s | None -> "picasso")
+          ".svg" )
+    in
+    let oc = open_out fn in
     let colored =
       List.fold_left
         (fun acc (c, e) ->
