@@ -4,8 +4,11 @@ Picasso is an Abstract element drawing library which provides several
 ways of drawing abstract elements.
 
 Visualization of abstract element poses two practical problems:
-- abstract elements may be unbounded, are generally defined on more than 2 dimensions, thus rendering them in a 2d context can be difficult.
-- managing graphical libraries can be really painful (especially in OCaml) and requires unnecessary efforts.
+- abstract elements may be unbounded, are generally defined on more
+  than 2 dimensions, thus rendering them in a 2d context can be
+  difficult.
+- managing graphical libraries can be really painful (especially in
+  OCaml) and requires unnecessary efforts.
 
 Picasso solves these issues by providing functions that handle most of
 the boilerplate you usually write to draw abstract elements and also
@@ -13,7 +16,8 @@ tries to use already installed graphical libraries instead of
 requiring heavy dependencies.
 
 ### Documentation
-you can build it locally by doing ``make doc`` or consult the online [documentation](https://ghilesz.github.io/picasso/picasso/index.html)
+you can build it locally by doing ``make doc`` or consult the online
+[documentation](https://ghilesz.github.io/picasso/picasso/index.html)
 
 ## Different Abstract Domains
 Picasso handles non-necessarily convex linear spaces of several

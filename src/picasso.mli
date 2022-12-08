@@ -148,7 +148,7 @@ val show : Rendering.t -> unit
     available. It first tries with gtk, and if lablgtk is not installed, retries
     using graphics. If none of the backend is installed, outputs a .svg file in
     the current directory, named after the title of the window if specified,
-    otherwise name "picasso[number].svg" *)
+    otherwise named "picasso[number].svg" *)
 
 val to_latex : ?filename:string -> ?tikz_only:bool -> Rendering.t -> unit
 (** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If the
