@@ -150,12 +150,12 @@ val show : Rendering.t -> unit
     .svg file in the current directory, named after the title of the window
     if specified, otherwise name "picasso[number].svg" *)
 
-val to_latex : ?tikz_only:bool -> Rendering.t -> string -> unit
+val to_latex : ?filename:string -> ?tikz_only:bool -> Rendering.t -> unit
 (** Outputs a tex file with a tikz figure corresponding to a Rendering.t. If
     the tikz_only option is set to false (default is true), it outputs the
     full tex document and not only the tikz figure *)
 
-val to_svg : Rendering.t -> string -> unit
+val to_svg : ?filename:string -> Rendering.t -> unit
 (** Outputs a svg file with a figure corresponding to a Rendering.t *)
 
 val to_obj : Rendering3d.t -> string -> unit

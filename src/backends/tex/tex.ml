@@ -5,8 +5,13 @@ let set_output out =
   let fmt = Format.formatter_of_out_channel oc in
   Texcanvas.output := Some fmt
 
-let output render filename =
-  Texcanvas.init filename;
+let output ?filename render  =
+  let open Rendering in
+  let fn = Filename.(temp_file ~temp_dir:current_dir_name (match filename with
+        | Some s -> s
+        | None -> match render.window.title with None -> "picasso" | Some s -> s )
+      ".svg") in
+  Texcanvas.init fn;
   List.iter (fun (c,_) -> ignore(Texcanvas.define_color c))
     Rendering.(render.elems);
   draw render;

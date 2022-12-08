@@ -23,8 +23,8 @@ let _ =
   let r =
     Rendering.add_l r [(blue, polyhedron); (red, octagon); (green, box)]
   in
-  to_svg r "file.svg" ;
-  to_latex ~tikz_only:false r "file.tex" ;
+  to_svg r;
+  to_latex ~tikz_only:false r ;
   let r3 = Rendering3d.create ~abciss:"x1" ~ordinate:"x2" ~height:"x3" () in
   let r3 = Rendering3d.add_l r3 [(blue, polyhedron)] in
   to_obj r3 "file.obj" ; show r

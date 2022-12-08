@@ -1,4 +1,4 @@
-module Make (D : Backend.T) = struct
+module Make (D : Manager.T) = struct
   (* Initialization and Backend setting *)
 
   let x_min = ref 0.

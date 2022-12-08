@@ -2,7 +2,7 @@ open Rendering
 open Graphics
 open Tools
 
-module D : Backend.T = struct
+module D = struct
   type color = int
 
   let ending = close_graph
