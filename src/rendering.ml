@@ -22,7 +22,7 @@ type t =
   ; (* projection variables *)
     abciss: string
   ; ordinate: string
-  ; highlighted: Apol.t list (* elems under cursor *)
+  ; highlighted: (Colors.t * Apol.t) list (* elems under cursor *)
   ; (* elems projected on the projection variables. We differentiate the bounded
        ones from the unbounded ones for efficiency *)
     bounded: (Colors.t * Geometry.hull) list
@@ -195,10 +195,10 @@ let hover (pt : Geometry.point) (r : t) : t * bool =
   let abspt = Apol.of_generator_list [genpt] in
   let highlighted =
     List.fold_left
-      (fun acc (_c, e) ->
+      (fun acc ((_, e) as elm) ->
         let e = Apol.change_environment e scenv in
         let constr = Apol.to_lincons_list e in
-        if List.for_all (Apol.sat_lincons abspt) constr then e :: acc else acc
+        if List.for_all (Apol.sat_lincons abspt) constr then elm :: acc else acc
         )
       [] r.elems
   in
@@ -210,12 +210,12 @@ let highlight_to_vertices r =
   let r = set_proj_vars r r.abciss r.ordinate in
   let screen = abstract_screen r in
   List.fold_left
-    (fun acc e ->
+    (fun acc (c, e) ->
       let interscreen = Apol.meet e screen in
       if Apol.is_bottom interscreen then acc
-      else to_vertice r interscreen :: acc )
+      else (c, to_vertice r interscreen) :: acc )
     [] r.highlighted
-  |> List.rev_map (List.rev_map norm)
+  |> List.rev_map (fun (c, e) -> (c, List.rev_map norm e))
 
 let to_vertices r =
   let norm = normalize r in

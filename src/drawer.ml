@@ -160,12 +160,16 @@ module Make (D : Manager.T) = struct
     x_max := r.scene.x_max ;
     y_min := r.scene.y_min ;
     y_max := r.scene.y_max ;
-    let highlight = highlight_to_vertices r in
     r |> to_vertices
     |> List.iter (fun ((r, g, b), e) ->
            let c = D.rgb r g b in
-           let c_high = D.rgb (r / 2) (g / 2) (b / 2) in
-           if List.mem e highlight then polygon c_high e else polygon c e ) ;
+           polygon c e ) ;
+    let highlight = highlight_to_vertices r in
+    List.iter
+      (fun ((r, g, b), e) ->
+        let c = D.rgb (r / 2) (g / 2) (b / 2) in
+        polygon c e )
+      highlight ;
     if r.grid then draw_grid r ;
     if r.axis then draw_axes r
 end
