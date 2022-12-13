@@ -190,16 +190,12 @@ let abstract_screen r =
 let hover pt r =
   let mx, my = (denormalize r) pt in
   let x = r.abciss and y = r.ordinate in
-  let scenv = E.make_s [||] [|x; y|] in
-  let genpt = G.of_float_point scenv [mx; my] in
-  let abspt = Apol.of_generator_list [genpt] in
   let highlighted =
     List.fold_left
       (fun acc (_c, e) ->
-        let e = Apol.change_environment e scenv in
-        let constr = Apol.to_lincons_list e in
-        if List.for_all (Apol.sat_lincons abspt) constr then e :: acc else acc
-        )
+        let e' = Apol.assign_fs e x mx in
+        let e'' = Apol.assign_fs e' y my in
+        if Apol.is_bottom e'' then e :: acc else acc )
       [] r.elems
   in
   {r with highlighted}
