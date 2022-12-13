@@ -194,12 +194,13 @@ let hover pt r =
   let genpt = G.of_float_point scenv [mx; my] in
   let abspt = Apol.of_generator_list [genpt] in
   let highlighted =
-    List.filter_map
-      (fun (_c, e) ->
+    List.fold_left
+      (fun acc (_c, e) ->
         let e = Apol.change_environment e scenv in
         let constr = Apol.to_lincons_list e in
-        if List.for_all (Apol.sat_lincons abspt) constr then Some e else None )
-      r.elems
+        if List.for_all (Apol.sat_lincons abspt) constr then e :: acc else acc
+        )
+      [] r.elems
   in
   {r with highlighted}
 
