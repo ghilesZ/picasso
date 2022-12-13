@@ -316,8 +316,10 @@ class canvas ~packing ~width ~height () =
              | _ -> !render ) ;
           self#repaint () )
         ~motion:(fun p ->
-          render := Rendering.hover p !render ;
-          self#repaint () )
+          let render' = Rendering.hover p !render in
+          if !render <> render' then (
+            render := render' ;
+            self#repaint () ) )
         ()
 
     (* Repaint the widget. *)
