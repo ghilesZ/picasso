@@ -3,12 +3,13 @@ open Apronext
 module E = Environmentext
 module G = Generatorext
 
-(* Speed *)
+(* drag sensitivity *)
 let sx = 1000.
 
 and sy = 1000.
 
-let zo = 2.
+(* zoom sensitivity *)
+let zo = 1.1
 
 type t =
   { window: window_settings
@@ -21,8 +22,9 @@ type t =
   ; (* projection variables *)
     abciss: string
   ; ordinate: string
-  ; (* elems projected on the projection variables. We differentiate the
-       bounded ones from the unbounded ones for efficiency *)
+  ; highlighted: Apol.t list (* elems under cursor *)
+  ; (* elems projected on the projection variables. We differentiate the bounded
+       ones from the unbounded ones for efficiency *)
     bounded: (Colors.t * Geometry.hull) list
   ; unbounded: (Colors.t * Apol.t) list }
 
@@ -44,7 +46,8 @@ let create ?title ?padding:(pad = 60.) ?grid ?axis ~abciss ~ordinate sx sy =
   ; abciss
   ; ordinate
   ; bounded= []
-  ; unbounded= [] }
+  ; unbounded= []
+  ; highlighted= [] }
 
 let toggle_grid r = {r with grid= not r.grid}
 
@@ -131,7 +134,7 @@ let denormalize u =
   let s, w = (u.scene, u.window) in
   let to_coord (min_x, max_x) (min_y, max_y) (a, b) =
     let a = projection (w.padding, w.sx -. w.padding) (min_x, max_x) a
-    and b = projection (w.padding, w.sy -. w.padding) (min_y, max_y) b in
+    and b = projection (w.sy -. w.padding, w.padding) (min_y, max_y) b in
     (a, b)
   in
   to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
@@ -158,8 +161,8 @@ let get_vars r =
     E.empty r.elems
 
 (* Changes the projection variables. if those are different from the previous
-   ones we: - compute the hull for bounded elements - project the unbounded
-   ones on the specified variables *)
+   ones we: - compute the hull for bounded elements - project the unbounded ones
+   on the specified variables *)
 let set_proj_vars r v1 v2 =
   let r = {r with abciss= v1; ordinate= v2} in
   let bounded, unbounded =
@@ -172,8 +175,8 @@ let set_proj_vars r v1 v2 =
   in
   focus {r with bounded; unbounded}
 
-(* TODO: recompute screen only when the window changes size and when
-   projection variables are changed *)
+(* TODO: recompute screen only when the window changes size and when projection
+   variables are changed *)
 let abstract_screen r =
   let x = r.abciss and y = r.ordinate in
   let scenv = E.make_s [||] [|x; y|] in
@@ -181,6 +184,36 @@ let abstract_screen r =
   [(0., 0.); (r.window.sx, 0.); (r.window.sx, r.window.sy); (0., r.window.sy)]
   |> List.rev_map (denormalize r)
   |> List.rev_map to_gens |> Apol.of_generator_list
+
+(* computes the list of abstract elements that are under a concrete
+   coordinate *)
+let hover pt r =
+  let mx, my = (denormalize r) pt in
+  let x = r.abciss and y = r.ordinate in
+  let scenv = E.make_s [||] [|x; y|] in
+  let genpt = G.of_float_point scenv [mx; my] in
+  let abspt = Apol.of_generator_list [genpt] in
+  let highlighted =
+    List.filter_map
+      (fun (_c, e) ->
+        let e = Apol.change_environment e scenv in
+        let constr = Apol.to_lincons_list e in
+        if List.for_all (Apol.sat_lincons abspt) constr then Some e else None )
+      r.elems
+  in
+  {r with highlighted}
+
+let highlight_to_vertices r =
+  let norm = normalize r in
+  let r = set_proj_vars r r.abciss r.ordinate in
+  let screen = abstract_screen r in
+  List.fold_left
+    (fun acc e ->
+      let interscreen = Apol.meet e screen in
+      if Apol.is_bottom interscreen then acc
+      else to_vertice r interscreen :: acc )
+    [] r.highlighted
+  |> List.rev_map (List.rev_map norm)
 
 let to_vertices r =
   let norm = normalize r in

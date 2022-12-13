@@ -1,4 +1,9 @@
 (executable
-  (name hello)
-  (libraries picasso)
-)
+ (name hello)
+ (modules hello)
+  (libraries picasso))
+
+(executable
+ (name disjoint)
+ (modules disjoint)
+ (libraries picasso))

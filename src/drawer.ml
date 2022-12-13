@@ -20,6 +20,8 @@ module Make (D : Manager.T) = struct
   (* few constants colors *)
   let black = D.rgb 0 0 0
 
+  let red = D.rgb 255 0 0
+
   let white = D.rgb 255 255 255
 
   let darkgray = D.rgb 64 64 64
@@ -158,8 +160,12 @@ module Make (D : Manager.T) = struct
     x_max := r.scene.x_max ;
     y_min := r.scene.y_min ;
     y_max := r.scene.y_max ;
+    let highlight = highlight_to_vertices r in
     r |> to_vertices
-    |> List.iter (fun ((r, g, b), e) -> polygon (D.rgb r g b) e) ;
+    |> List.iter (fun ((r, g, b), e) ->
+           let c = D.rgb r g b in
+           let c_high = D.rgb (r / 2) (g / 2) (b / 2) in
+           if List.mem e highlight then polygon c_high e else polygon c e ) ;
     if r.grid then draw_grid r ;
     if r.axis then draw_axes r
 end

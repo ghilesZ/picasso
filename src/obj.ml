@@ -77,7 +77,7 @@ let output =
       Filename.(
         temp_file ~temp_dir:current_dir_name
           (match filename with Some s -> s | None -> "picasso")
-          ".svg" )
+          ".obj" )
     in
     let oc = open_out fn in
     let colored =

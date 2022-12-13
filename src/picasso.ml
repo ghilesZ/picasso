@@ -3,6 +3,13 @@ module Rendering = Rendering
 module Rendering3d = Rendering3d
 module Drawable = Drawable
 
+(*TODO: remove this when next release of apron is done (i.e > v0.9.13) *)
+let () =
+  let open Apron.Manager in
+  Printexc.register_printer (function
+    | Error e -> Some (Format.asprintf "%a" print_exclog e)
+    | _ -> None )
+
 exception BackendError = Manager.BackendError
 
 let in_gtk_canvas = Canvas.build

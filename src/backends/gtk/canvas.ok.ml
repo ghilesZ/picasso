@@ -188,15 +188,22 @@ class clickable ~packing ~width ~height () =
              fscroll (GdkEvent.Scroll.direction c) ;
              false ) )
 
+    method private motion (f : float * float -> unit) =
+      ignore
+        (da#event#connect#motion_notify ~callback:(fun m ->
+             let p = GdkEvent.Motion.(x m, y m) in
+             f p ; false ) )
+
     method mouse_set ?expose:(exp = ignore) ?press:(pl = ignore)
         ?release:(rl = ignore) ?click:(cl = ignore) ?drag:(dl = fun _ _ -> ())
-        ?scrollwheel:(sw = ignore) () =
+        ?scrollwheel:(sw = ignore) ?motion:(mo = ignore) () =
       self#expose exp ;
       self#press pl ;
       self#release rl ;
       self#click cl ;
       self#drag dl ;
-      self#scrollwheel sw
+      self#scrollwheel sw ;
+      self#motion mo
   end
 
 module Gtkcanvas = struct
@@ -306,6 +313,9 @@ class canvas ~packing ~width ~height () =
              | `DOWN -> Rendering.zoom !render
              | `UP -> Rendering.unzoom !render
              | _ -> !render ) ;
+          self#repaint () )
+        ~motion:(fun p ->
+          render := Rendering.hover p !render ;
           self#repaint () )
         ()
 
