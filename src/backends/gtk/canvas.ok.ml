@@ -195,6 +195,8 @@ class clickable ~packing ~width ~height () =
              f (self#get_coord p) ;
              false ) )
 
+    (* initializes mouse event with some functions. by default, all events are
+       connected to an no-op function *)
     method mouse_set ?expose:(exp = ignore) ?press:(pl = ignore)
         ?release:(rl = ignore) ?click:(cl = ignore) ?drag:(dl = fun _ _ -> ())
         ?scrollwheel:(sw = ignore) ?motion:(mo = ignore) () =
@@ -316,8 +318,8 @@ class canvas ~packing ~width ~height () =
              | _ -> !render ) ;
           self#repaint () )
         ~motion:(fun p ->
-          let render' = Rendering.hover p !render in
-          if !render <> render' then (
+          let render', change = Rendering.hover p !render in
+          if change then (
             render := render' ;
             self#repaint () ) )
         ()

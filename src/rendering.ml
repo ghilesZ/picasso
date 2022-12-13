@@ -187,7 +187,7 @@ let abstract_screen r =
 
 (* computes the list of abstract elements that are under a concrete
    coordinate *)
-let hover pt r =
+let hover (pt : Geometry.point) (r : t) : t * bool =
   let mx, my = (denormalize r) pt in
   let x = r.abciss and y = r.ordinate in
   let scenv = E.make_s [||] [|x; y|] in
@@ -202,7 +202,8 @@ let hover pt r =
         )
       [] r.elems
   in
-  {r with highlighted}
+  if highlighted <> r.highlighted then ({r with highlighted}, true)
+  else (r, false)
 
 let highlight_to_vertices r =
   let norm = normalize r in
