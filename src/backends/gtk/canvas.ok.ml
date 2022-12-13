@@ -190,9 +190,10 @@ class clickable ~packing ~width ~height () =
 
     method private motion (f : float * float -> unit) =
       ignore
-        (da#event#connect#motion_notify ~callback:(fun m ->
-             let p = GdkEvent.Motion.(x m, y m) in
-             f p ; false ) )
+        (da#event#connect#motion_notify ~callback:(fun c ->
+             let p = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
+             f (self#get_coord p) ;
+             false ) )
 
     method mouse_set ?expose:(exp = ignore) ?press:(pl = ignore)
         ?release:(rl = ignore) ?click:(cl = ignore) ?drag:(dl = fun _ _ -> ())
