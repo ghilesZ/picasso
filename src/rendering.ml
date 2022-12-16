@@ -160,6 +160,18 @@ let get_vars r =
     (fun acc (_, elm) -> E.join acc (Apol.get_environment elm))
     E.empty r.elems
 
+(* computes the union of environments of all variables as an array *)
+let array_var render =
+  let e = get_vars render in
+  let a = Array.make (E.size e) "" in
+  let i = ref 0 in
+  E.iter
+    (fun v ->
+      a.(!i) <- Apron.Var.to_string v ;
+      incr i )
+    e ;
+  a
+
 (* Changes the projection variables. if those are different from the previous
    ones we: - compute the hull for bounded elements - project the unbounded ones
    on the specified variables *)

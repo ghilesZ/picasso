@@ -4,18 +4,6 @@ open Tools
 open Geometry
 open GButton
 
-let array_var render =
-  let open Apronext.Environmentext in
-  let e = Rendering.get_vars render in
-  let a = Array.make (size e) "" in
-  let i = ref 0 in
-  iter
-    (fun v ->
-      a.(!i) <- Apron.Var.to_string v ;
-      incr i )
-    e ;
-  a
-
 let find_index arr v =
   let exception Found of int in
   try
@@ -76,7 +64,7 @@ class toolbar ~width ~height ~hpack ~vpack () =
       cur_v#set_label vars.(ord)
 
     method init (render : Rendering.t ref) refresh =
-      vars <- array_var !render ;
+      vars <- Rendering.array_var !render ;
       abc <- find_index vars !render.abciss |> Option.get ;
       ord <- find_index vars !render.ordinate |> Option.get ;
       self#set_vars () ;
@@ -123,6 +111,9 @@ class clickable ~packing ~width ~height () =
 
     (* minimum threshold under which we do not trigger the drag event *)
     val mutable tolerance = 900. (* 30. ^ 2. *)
+
+    (* trigger the hover one every "hoverratio" times *)
+    val mutable hoverratio = 3
 
     val mutable old : point option = None
 
@@ -188,12 +179,15 @@ class clickable ~packing ~width ~height () =
              fscroll (GdkEvent.Scroll.direction c) ;
              false ) )
 
-    method private motion (f : float * float -> unit) =
-      ignore
-        (da#event#connect#motion_notify ~callback:(fun c ->
-             let p = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
-             f (self#get_coord p) ;
-             false ) )
+    method private motion =
+      let cpt = ref 0 in
+      fun (f : float * float -> unit) ->
+        ignore
+          (da#event#connect#motion_notify ~callback:(fun c ->
+               ( if !cpt mod hoverratio = 0 then
+                 let p = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
+                 f (self#get_coord p) ) ;
+               incr cpt ; false ) )
 
     (* initializes mouse event with some functions. by default, all events are
        connected to an no-op function *)
