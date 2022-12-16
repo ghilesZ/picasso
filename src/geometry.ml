@@ -38,16 +38,16 @@ let hull : point list -> hull = function
         else if p2 = p then -1
         else
           let ccw = ccw p p1 p2 in
-          -int_of_float ccw
+          if ccw < 0. then 1 else if ccw = 0. then 0 else -1
       in
       let rec aux cl conv =
         match (cl, conv) with
         | [], _ -> conv
         | h :: t, a :: b :: tl ->
-            if ccw b a h <= 0. then aux cl (b :: tl) else aux t (h :: conv)
+            let p = ccw b a h in
+            if p <= 0. then aux cl (b :: tl) else aux t (h :: conv)
         | h :: t, _ -> aux t (h :: conv)
       in
-      let p = List.fold_left min h t in
       aux (List.sort cmp l) [p]
 
 type line = float * float * float
