@@ -173,8 +173,8 @@ let array_var render =
   a
 
 (* Changes the projection variables. if those are different from the previous
-   ones we: - compute the hull for bounded elements - project the unbounded ones
-   on the specified variables *)
+   ones we: 1) compute the hull for bounded elements 2) project the unbounded
+   ones on the specified variables *)
 let set_proj_vars r v1 v2 =
   let r = {r with abciss= v1; ordinate= v2} in
   let bounded, unbounded =
@@ -207,11 +207,11 @@ let hover (pt : Geometry.point) (r : t) : t * bool =
   let abspt = Apol.of_generator_list [genpt] in
   let highlighted =
     List.fold_left
-      (fun acc ((_, e) as elm) ->
+      (fun acc (col, e) ->
         let e = Apol.change_environment e scenv in
         let constr = Apol.to_lincons_list e in
-        if List.for_all (Apol.sat_lincons abspt) constr then elm :: acc else acc
-        )
+        if List.for_all (Apol.sat_lincons abspt) constr then (col, e) :: acc
+        else acc )
       [] r.elems
   in
   if highlighted <> r.highlighted then ({r with highlighted}, true)

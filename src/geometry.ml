@@ -22,33 +22,33 @@ let sq_dist (a, b) (c, d) =
 
 let print fmt (x, y) = Format.fprintf fmt "(%f,%f)" x y
 
+let det (dx1, dy1) (dx2, dy2) = (dx1 *. dy2) -. (dy1 *. dx2)
+
+let ccw (px, py) (ax, ay) (bx, by) =
+  det (ax -. px, ay -. py) (bx -. px, by -. py)
+
 (* convex hull computation *)
-let hull : point list -> hull =
-  let det (dx1, dy1) (dx2, dy2) = (dx1 *. dy2) -. (dy1 *. dx2) in
-  function
+let hull : point list -> hull = function
   | [] -> []
   | ([_] as l) | ([_; _] as l) -> l
   | h :: t as l ->
       let p = List.fold_left min h t in
-      let ccw (px, py) (ax, ay) (bx, by) =
-        det (ax -. px, ay -. py) (bx -. px, by -. py)
-      in
       let cmp p1 p2 =
         if p1 = p then 1
         else if p2 = p then -1
         else
-          let ccw = ccw p p1 p2 in
-          if ccw < 0. then 1 else if ccw = 0. then 0 else -1
+          let ccw = ccw p p2 p1 in
+          int_of_float ccw
       in
-      let rec graham_aux cl conv =
+      let rec aux cl conv =
         match (cl, conv) with
         | [], _ -> conv
         | h :: t, a :: b :: tl ->
-            let p = ccw b a h in
-            if p <= 0. then graham_aux cl (b :: tl) else graham_aux t (h :: conv)
-        | h :: t, _ -> graham_aux t (h :: conv)
+            if ccw b a h <= 0. then aux cl (b :: tl) else aux t (h :: conv)
+        | h :: t, _ -> aux t (h :: conv)
       in
-      graham_aux (List.sort cmp l) [p]
+      let p = List.fold_left min h t in
+      aux (List.sort cmp l) [p]
 
 type line = float * float * float
 

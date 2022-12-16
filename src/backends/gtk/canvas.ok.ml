@@ -112,7 +112,7 @@ class clickable ~packing ~width ~height () =
     (* minimum threshold under which we do not trigger the drag event *)
     val mutable tolerance = 900. (* 30. ^ 2. *)
 
-    (* trigger the hover one every "hoverratio" times *)
+    (* trigger the hover event one every "hoverratio" times *)
     val mutable hoverratio = 3
 
     val mutable old : point option = None
