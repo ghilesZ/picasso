@@ -37,8 +37,8 @@ let hull : point list -> hull = function
         if p1 = p then 1
         else if p2 = p then -1
         else
-          let ccw = ccw p p2 p1 in
-          int_of_float ccw
+          let ccw = ccw p p1 p2 in
+          -int_of_float ccw
       in
       let rec aux cl conv =
         match (cl, conv) with
