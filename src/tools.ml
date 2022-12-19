@@ -6,8 +6,9 @@ let iof = int_of_float
 let trail_ending_zeros str =
   let len = String.length str in
   let rec aux cpt i =
-    if i >= len then len
-    else aux (if str.[len - i - 1] = '0' then cpt + 1 else cpt) (i + 1)
+    if i >= len then cpt
+    else if str.[len - i - 1] = '0' then aux (cpt + 1) (i + 1)
+    else cpt
   in
   let nb_end_zero = aux 0 0 in
   String.sub str 0 (len - nb_end_zero)
@@ -16,8 +17,7 @@ let pp_float fmt f =
   let i_c = iof (ceil f) in
   let i_f = iof (floor f) in
   let i =
-    if abs_float (float i_c -. f) < abs_float (float i_f -. f) then i_c
-    else i_f
+    if abs_float (float i_c -. f) < abs_float (float i_f -. f) then i_c else i_f
   in
   if abs_float (foi i -. f) < 0.001 then Format.fprintf fmt "%i" i
   else Format.fprintf fmt "%s" (trail_ending_zeros (Format.asprintf "%f" f))

@@ -38,9 +38,9 @@ module Make (D : Manager.T) = struct
     let p1 = to_backend_coord p1 and p2 = to_backend_coord p2 in
     D.draw_line ~dashed col p1 p2
 
-  let draw_text col pos (text_x, text_y) text =
-    let text_x, text_y = to_backend_coord (text_x, text_y) in
-    D.draw_text col pos (text_x, text_y) text
+  let draw_text col pos p text =
+    let p = to_backend_coord p in
+    D.draw_text col pos p text
 
   let fill_circle col ((cx, cy) as center) rad =
     let ((px, _) as p) = to_backend_coord center in
@@ -122,31 +122,24 @@ module Make (D : Manager.T) = struct
     in
     fill_poly gray thick_line ;
     let mb_size = 6. in
-    let fx cur =
-      let x, _ = normalize r (cur, down) in
-      draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size)
-    in
-    let fy cur =
-      let _, y = normalize r (left, cur) in
-      draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y)
-    in
-    graduation 0.5 fx fy r ;
-    (* vetrtical coordinates *)
+    (* vetrtical minibars and coordinates *)
     let fx =
       let flag = ref 0 in
       fun cur ->
         let text = Format.asprintf "%a" Tools.pp_float cur in
         let x, _ = normalize r (cur, down) in
-        if !flag mod 4 = 0 then draw_text darkgray `Center (x, pad) text ;
+        draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
+        if !flag mod 4 = 0 then draw_text darkgray `Left (x, hy) text ;
         incr flag
     in
-    (* hozizontal coordinates *)
+    (* hozizontal minibar coordinates *)
     let fy =
       let flag = ref 0 in
       fun cur ->
         let text = Format.asprintf "%a" Tools.pp_float cur in
         let _, y = normalize r (left, cur) in
-        if !flag mod 2 = 0 then draw_text darkgray `Center (pad, y) text ;
+        draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y) ;
+        if !flag mod 4 = 0 then draw_text darkgray `Left (vx, y) text ;
         incr flag
     in
     graduation 0.5 fx fy r ;

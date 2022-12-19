@@ -24,6 +24,7 @@ let print fmt (x, y) = Format.fprintf fmt "(%f,%f)" x y
 
 let det (dx1, dy1) (dx2, dy2) = (dx1 *. dy2) -. (dy1 *. dx2)
 
+(* counter clock wise scalar product *)
 let ccw (px, py) (ax, ay) (bx, by) =
   det (ax -. px, ay -. py) (bx -. px, by -. py)
 
@@ -44,8 +45,7 @@ let hull : point list -> hull = function
         match (cl, conv) with
         | [], _ -> conv
         | h :: t, a :: b :: tl ->
-            let p = ccw b a h in
-            if p <= 0. then aux cl (b :: tl) else aux t (h :: conv)
+            if ccw b a h <= 0. then aux cl (b :: tl) else aux t (h :: conv)
         | h :: t, _ -> aux t (h :: conv)
       in
       aux (List.sort cmp l) [p]

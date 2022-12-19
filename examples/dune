@@ -7,3 +7,8 @@
  (name disjoint)
  (modules disjoint)
  (libraries picasso))
+
+(executable
+ (name scale)
+ (modules scale)
+ (libraries picasso))

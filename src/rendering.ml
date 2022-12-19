@@ -22,6 +22,7 @@ type t =
   ; (* projection variables *)
     abciss: string
   ; ordinate: string
+  ; env2d: E.t (* 2d apron environment *)
   ; highlighted: (Colors.t * Apol.t) list (* elems under cursor *)
   ; (* elems projected on the projection variables. We differentiate the bounded
        ones from the unbounded ones for efficiency *)
@@ -45,6 +46,7 @@ let create ?title ?padding:(pad = 60.) ?grid ?axis ~abciss ~ordinate sx sy =
   ; elems= []
   ; abciss
   ; ordinate
+  ; env2d= E.make_s [||] [|abciss; ordinate|]
   ; bounded= []
   ; unbounded= []
   ; highlighted= [] }
@@ -104,6 +106,8 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
 let add_l ?autofit:(auto = true) r drawables =
   List.fold_left (add ~autofit:auto) r drawables
 
+(* set the bounds of the abstract scene so that it encompasses all abstract
+   elements *)
 let focus r =
   let open Intervalext in
   let bounds v =
@@ -176,7 +180,7 @@ let array_var render =
    ones we: 1) compute the hull for bounded elements 2) project the unbounded
    ones on the specified variables *)
 let set_proj_vars r v1 v2 =
-  let r = {r with abciss= v1; ordinate= v2} in
+  let r = {r with abciss= v1; ordinate= v2; env2d= E.make_s [||] [|v1; v2|]} in
   let bounded, unbounded =
     List.fold_left
       (fun (b, u) (c, pol) ->
@@ -190,25 +194,21 @@ let set_proj_vars r v1 v2 =
 (* TODO: recompute screen only when the window changes size and when projection
    variables are changed *)
 let abstract_screen r =
-  let x = r.abciss and y = r.ordinate in
-  let scenv = E.make_s [||] [|x; y|] in
-  let to_gens (x, y) = G.of_float_point scenv [x; y] in
+  let to_gens (x, y) = G.of_float_point r.env2d [x; y] in
   [(0., 0.); (r.window.sx, 0.); (r.window.sx, r.window.sy); (0., r.window.sy)]
-  |> List.rev_map (denormalize r)
-  |> List.rev_map to_gens |> Apol.of_generator_list
+  |> List.rev_map (fun pt -> to_gens (denormalize r pt))
+  |> Apol.of_generator_list
 
 (* computes the list of abstract elements that are under a concrete
    coordinate *)
 let hover (pt : Geometry.point) (r : t) : t * bool =
   let mx, my = (denormalize r) pt in
-  let x = r.abciss and y = r.ordinate in
-  let scenv = E.make_s [||] [|x; y|] in
-  let genpt = G.of_float_point scenv [mx; my] in
+  let genpt = G.of_float_point r.env2d [mx; my] in
   let abspt = Apol.of_generator_list [genpt] in
   let highlighted =
     List.fold_left
       (fun acc (col, e) ->
-        let e = Apol.change_environment e scenv in
+        let e = Apol.change_environment e r.env2d in
         let constr = Apol.to_lincons_list e in
         if List.for_all (Apol.sat_lincons abspt) constr then (col, e) :: acc
         else acc )

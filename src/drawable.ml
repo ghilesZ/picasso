@@ -40,12 +40,12 @@ let product x y =
       List.fold_left
         (fun acc y ->
           let m = Apol.meet x y in
-          if Apol.is_bottom m then acc else m :: acc)
-        acc y)
+          if Apol.is_bottom m then acc else m :: acc )
+        acc y )
     [] x
 
 let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
-  | [] -> invalid_arg "should be non empty"
+  | [] -> invalid_arg "Drawable.bounds: should be non bottom"
   | h :: tl ->
       let i1 = Apol.bound_variable_s h v1 in
       let i2 = Apol.bound_variable_s h v2 in
@@ -53,5 +53,5 @@ let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
         (fun (i1, i2) p ->
           let i1' = Apol.bound_variable_s p v1 in
           let i2' = Apol.bound_variable_s p v2 in
-          (Intervalext.join i1 i1', Intervalext.join i2 i2'))
+          (Intervalext.join i1 i1', Intervalext.join i2 i2') )
         (i1, i2) tl
