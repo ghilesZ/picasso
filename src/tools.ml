@@ -33,3 +33,12 @@ let projection (a, b) (c, d) n =
     if x < 0. then (r -. x) /. (y -. x) else (r -. x) /. (y -. x)
   in
   if b = a then c else perc (c, d) (to_perc (a, b) n)
+
+let spawn_filename default1 default2 prefix ext =
+  match default1 with
+  | Some s -> s
+  | None ->
+      Filename.(
+        temp_file ~temp_dir:current_dir_name
+          (match default2 with None -> prefix | Some s -> s)
+          ext )

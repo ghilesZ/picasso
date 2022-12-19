@@ -73,12 +73,7 @@ let output =
   end) in
   fun ?filename r ->
     let open Rendering3d in
-    let fn =
-      Filename.(
-        temp_file ~temp_dir:current_dir_name
-          (match filename with Some s -> s | None -> "picasso")
-          ".obj" )
-    in
+    let fn = Tools.spawn_filename filename None "picasso" "obj" in
     let oc = open_out fn in
     let colored =
       List.fold_left

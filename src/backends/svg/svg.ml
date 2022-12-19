@@ -1,4 +1,4 @@
-include Drawer.Make(Svgcanvas)
+include Drawer.Make (Svgcanvas)
 
 let set_output out =
   let oc = open_out out in
@@ -7,11 +7,8 @@ let set_output out =
 
 let output ?filename render =
   let open Rendering in
-  let fn = Filename.(temp_file ~temp_dir:current_dir_name (match filename with
-        | Some s -> s
-        | None -> match render.window.title with None -> "picasso" | Some s -> s )
-      ".svg") in
-  Svgcanvas.init render.window.sx render.window.sy fn;
-  fill_poly white (screen());
-  draw render;
-  Svgcanvas.ending()
+  let fn = Tools.spawn_filename filename render.window.title "picasso" "svg" in
+  Svgcanvas.init render.window.sx render.window.sy fn ;
+  fill_poly white (screen ()) ;
+  draw render ;
+  Svgcanvas.ending ()

@@ -129,7 +129,7 @@ module Make (D : Manager.T) = struct
         let text = Format.asprintf "%a" Tools.pp_float cur in
         let x, _ = normalize r (cur, down) in
         draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
-        if !flag mod 4 = 0 then draw_text darkgray `Left (x, hy) text ;
+        if !flag mod 4 = 0 then draw_text darkgray `Center (x, hy) text ;
         incr flag
     in
     (* hozizontal minibar coordinates *)
@@ -139,7 +139,7 @@ module Make (D : Manager.T) = struct
         let text = Format.asprintf "%a" Tools.pp_float cur in
         let _, y = normalize r (left, cur) in
         draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y) ;
-        if !flag mod 4 = 0 then draw_text darkgray `Left (vx, y) text ;
+        if !flag mod 4 = 0 then draw_text darkgray `Center (vx, y) text ;
         incr flag
     in
     graduation 0.5 fx fy r ;
