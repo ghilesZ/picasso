@@ -63,5 +63,5 @@ let print fmt (t : t) =
 
 let pp_print fmt (t : t) =
   Format.fprintf fmt "%a"
-    (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.print)
+    (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.pp_print)
     t

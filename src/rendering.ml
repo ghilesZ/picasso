@@ -1,3 +1,6 @@
+(* this modules handles the link between a physical window (size, padding, etc)
+   and an abstract scene (zoom, "camera angle") *)
+
 open Tools
 open Apronext
 module E = Environmentext
@@ -59,7 +62,7 @@ let denormalize s w =
   in
   to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
 
-let recompute_screen s w env2d =
+let update_screen s w env2d =
   let to_gens (x, y) = G.of_float_point env2d [x; y] in
   [(0., 0.); (w.sx, 0.); (w.sx, w.sy); (0., w.sy)]
   |> List.rev_map (fun pt -> to_gens (denormalize s w pt))
@@ -105,7 +108,7 @@ let translate (x, y) r =
     ; y_min= r.scene.y_min -. ly
     ; y_max= r.scene.y_max -. ly }
   in
-  let abstract_screen = recompute_screen scene r.window r.env2d in
+  let abstract_screen = update_screen scene r.window r.env2d in
   {r with scene; abstract_screen}
 
 let scale r alpha =
@@ -116,7 +119,7 @@ let scale r alpha =
   let x_max = center_x +. ((r.scene.x_max -. center_x) *. alpha) in
   let y_max = center_y +. ((r.scene.y_max -. center_y) *. alpha) in
   let scene = {x_min; x_max; y_min; y_max} in
-  let abstract_screen = recompute_screen scene r.window r.env2d in
+  let abstract_screen = update_screen scene r.window r.env2d in
   {r with scene; abstract_screen}
 
 let zoom r = scale r zo
@@ -125,17 +128,17 @@ let unzoom r = scale r (1. /. zo)
 
 let change_size_x x r =
   let window = {r.window with sx= x} in
-  let abstract_screen = recompute_screen r.scene window r.env2d in
+  let abstract_screen = update_screen r.scene window r.env2d in
   {r with window; abstract_screen}
 
 let change_size_y y r =
   let window = {r.window with sy= y} in
-  let abstract_screen = recompute_screen r.scene window r.env2d in
+  let abstract_screen = update_screen r.scene window r.env2d in
   {r with window; abstract_screen}
 
 let change_size x y r =
   let window = {r.window with sx= x; sy= y} in
-  let abstract_screen = recompute_screen r.scene window r.env2d in
+  let abstract_screen = update_screen r.scene window r.env2d in
   {r with window; abstract_screen}
 
 let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
@@ -146,7 +149,7 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
     let i1, i2 = Drawable.bounds r.abciss r.ordinate x in
     let (l1, u1), (l2, u2) = Intervalext.(to_float i1, to_float i2) in
     let scene = set_scene r.scene l1 u1 l2 u2 in
-    let abstract_screen = recompute_screen scene r.window r.env2d in
+    let abstract_screen = update_screen scene r.window r.env2d in
     {r with scene; abstract_screen}
   else r
 
@@ -167,7 +170,7 @@ let focus r =
   in
   let x_min, x_max = bounds r.abciss and y_min, y_max = bounds r.ordinate in
   let scene = {x_min; x_max; y_min; y_max} in
-  let abstract_screen = recompute_screen scene r.window r.env2d in
+  let abstract_screen = update_screen scene r.window r.env2d in
   {r with scene; abstract_screen}
 
 let normalize r =
