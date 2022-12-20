@@ -55,3 +55,13 @@ let bounds v1 v2 : t -> Intervalext.t * Intervalext.t = function
           let i2' = Apol.bound_variable_s p v2 in
           (Intervalext.join i1 i1', Intervalext.join i2 i2') )
         (i1, i2) tl
+
+let print fmt (t : t) =
+  Format.fprintf fmt "%a"
+    (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.print)
+    t
+
+let pp_print fmt (t : t) =
+  Format.fprintf fmt "%a"
+    (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.print)
+    t

@@ -31,6 +31,14 @@ let layout ~packing ~size ~orientation nb =
       let box = GPack.hbox ~width:size ~packing () in
       Array.init nb (fun _ -> GPack.hbox ~width:cell_size ~packing:box#add ())
 
+class textarea ~width ~height ~packing () =
+  let txt_area = GText.view ~editable:false ~width ~height ~packing () in
+  object (_self)
+    method set_text str =
+      let buf = txt_area#buffer in
+      buf#set_text str ; txt_area#set_buffer buf
+  end
+
 class toolbar ~width ~height ~hpack ~vpack () =
   (* horizontal toolbar *)
   let tb_h = layout ~packing:hpack ~size:(width - 40) ~orientation:`H 6 in
@@ -93,8 +101,7 @@ class toolbar ~width ~height ~hpack ~vpack () =
         (next_var_v#connect#clicked ~callback:(fun () ->
              ord <- (ord + 1) mod len ;
              if abc = ord then ord <- (ord + 1) mod len ;
-             update () ) ) ;
-      ()
+             update () ) )
   end
 
 class clickable ~packing ~width ~height () =
@@ -291,8 +298,13 @@ class canvas ~packing ~width ~height () =
 
     val mutable rend = None
 
+    val mutable text = None
+
     method get_render () =
       match rend with None -> failwith "render not set" | Some r -> !r
+
+    method get_text_area () =
+      match text with None -> failwith "text_area not set" | Some r -> r
 
     method set_render (render : Rendering.t ref) =
       rend <- Some render ;
@@ -315,8 +327,15 @@ class canvas ~packing ~width ~height () =
           let render', change = Rendering.hover p !render in
           if change then (
             render := render' ;
+            let elems = List.map snd !render.highlighted in
+            let txt = Format.asprintf "%a" Drawable.pp_print elems in
+            (self#get_text_area ())#set_text txt ;
             self#repaint () ) )
         ()
+
+    method init render (text_area : textarea) =
+      self#set_render render ;
+      text <- Some text_area
 
     (* Repaint the widget. *)
     method repaint () =
@@ -339,10 +358,11 @@ let build render =
   window#event#add [`ALL_EVENTS] ;
   let hbox = GPack.hbox ~width ~packing:window#add () in
   let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
-  let c = new canvas ~packing:vbox#add ~height:(height - 30) ~width () in
+  let c = new canvas ~packing:vbox#add ~height:(height - 70) ~width () in
   let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
+  let txt = new textarea ~packing:vbox#add ~height:50 ~width () in
   let render = ref render in
-  c#set_render render ;
+  c#init render txt ;
   tb#init render c#repaint ;
   window#show () ;
   GMain.Main.main ()

@@ -7,3 +7,7 @@ _obuild
 *.docdir
 .merlin
 .ocamlformat
+# picasso output files 
+*.obj
+*.svg
+*.tex

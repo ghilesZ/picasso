@@ -22,6 +22,8 @@ let pp_float fmt f =
   if abs_float (foi i -. f) < 0.001 then Format.fprintf fmt "%i" i
   else Format.fprintf fmt "%s" (trail_ending_zeros (Format.asprintf "%f" f))
 
+let newline_sep fmt () = Format.fprintf fmt "\n"
+
 let iterate f x0 next until =
   let rec loop () cur = if not (until cur) then loop (f cur) (next cur) in
   loop () x0
