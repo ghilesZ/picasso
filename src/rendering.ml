@@ -17,11 +17,12 @@ type t =
   ; (* graphical options *)
     grid: bool
   ; axis: bool
-  ; (* content *)
-    elems: (Colors.t * Apol.t) list
   ; (* projection variables *)
     abciss: string
   ; ordinate: string
+  ; abstract_screen: Apol.t
+  ; (* content *)
+    elems: (Colors.t * Apol.t) list
   ; env2d: E.t (* 2d apron environment *)
   ; highlighted: (Colors.t * Apol.t) list (* elems under cursor *)
   ; (* elems projected on the projection variables. We differentiate the bounded
@@ -38,15 +39,46 @@ and scene_settings = {x_min: float; x_max: float; y_min: float; y_max: float}
 let empty_scene =
   {x_min= infinity; x_max= neg_infinity; y_min= infinity; y_max= neg_infinity}
 
+(* given a window and a scene, returns a function that maps an abstract
+   coordinate to a point of the scene to the window *)
+let normalize s w =
+  let to_coord (min_x, max_x) (min_y, max_y) (a, b) =
+    let a = projection (min_x, max_x) (w.padding, w.sx -. w.padding) a
+    and b = projection (min_y, max_y) (w.padding, w.sy -. w.padding) b in
+    (a, b)
+  in
+  to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
+
+(* given a scene and a window, returns a function that maps a point of the
+   window to the abstract coordinate of the scene *)
+let denormalize s w =
+  let to_coord (min_x, max_x) (min_y, max_y) (a, b) =
+    let a = projection (w.padding, w.sx -. w.padding) (min_x, max_x) a
+    and b = projection (w.padding, w.sy -. w.padding) (min_y, max_y) b in
+    (a, b)
+  in
+  to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
+
+let recompute_screen s w env2d =
+  let to_gens (x, y) = G.of_float_point env2d [x; y] in
+  [(0., 0.); (w.sx, 0.); (w.sx, w.sy); (0., w.sy)]
+  |> List.rev_map (fun pt -> to_gens (denormalize s w pt))
+  |> Apol.of_generator_list
+
 let create ?title ?padding:(pad = 60.) ?grid ?axis ~abciss ~ordinate sx sy =
-  { window= {padding= pad; sx; sy; title}
-  ; scene= empty_scene
+  let window = {padding= pad; sx; sy; title} in
+  let scene = empty_scene in
+  let env2d = E.make_s [||] [|abciss; ordinate|] in
+  let abstract_screen = Apol.bottom env2d in
+  { window
+  ; scene
   ; axis= Option.value axis ~default:true
   ; grid= Option.value grid ~default:true
   ; elems= []
   ; abciss
   ; ordinate
-  ; env2d= E.make_s [||] [|abciss; ordinate|]
+  ; env2d
+  ; abstract_screen
   ; bounded= []
   ; unbounded= []
   ; highlighted= [] }
@@ -62,36 +94,49 @@ let set_scene s x_min x_max y_min y_max =
   ; y_min= min y_min s.y_min
   ; y_max= max y_max s.y_max }
 
-let translate (x, y) a =
-  let x = x /. a.window.sx in
-  let y = y /. a.window.sy in
-  let lx = (a.scene.x_max -. a.scene.x_min) *. x in
-  let ly = (a.scene.y_max -. a.scene.y_min) *. y in
-  { a with
-    scene=
-      { x_min= a.scene.x_min -. lx
-      ; x_max= a.scene.x_max -. lx
-      ; y_min= a.scene.y_min -. ly
-      ; y_max= a.scene.y_max -. ly } }
+let translate (x, y) r =
+  let x = x /. r.window.sx in
+  let y = y /. r.window.sy in
+  let lx = (r.scene.x_max -. r.scene.x_min) *. x in
+  let ly = (r.scene.y_max -. r.scene.y_min) *. y in
+  let scene =
+    { x_min= r.scene.x_min -. lx
+    ; x_max= r.scene.x_max -. lx
+    ; y_min= r.scene.y_min -. ly
+    ; y_max= r.scene.y_max -. ly }
+  in
+  let abstract_screen = recompute_screen scene r.window r.env2d in
+  {r with scene; abstract_screen}
 
-let scale a alpha =
-  let center_x = 0.5 *. (a.scene.x_max +. a.scene.x_min) in
-  let center_y = 0.5 *. (a.scene.y_max +. a.scene.y_min) in
-  let x_min = center_x +. ((a.scene.x_min -. center_x) *. alpha) in
-  let y_min = center_y +. ((a.scene.y_min -. center_y) *. alpha) in
-  let x_max = center_x +. ((a.scene.x_max -. center_x) *. alpha) in
-  let y_max = center_y +. ((a.scene.y_max -. center_y) *. alpha) in
-  {a with scene= {x_min; x_max; y_min; y_max}}
+let scale r alpha =
+  let center_x = 0.5 *. (r.scene.x_max +. r.scene.x_min) in
+  let center_y = 0.5 *. (r.scene.y_max +. r.scene.y_min) in
+  let x_min = center_x +. ((r.scene.x_min -. center_x) *. alpha) in
+  let y_min = center_y +. ((r.scene.y_min -. center_y) *. alpha) in
+  let x_max = center_x +. ((r.scene.x_max -. center_x) *. alpha) in
+  let y_max = center_y +. ((r.scene.y_max -. center_y) *. alpha) in
+  let scene = {x_min; x_max; y_min; y_max} in
+  let abstract_screen = recompute_screen scene r.window r.env2d in
+  {r with scene; abstract_screen}
 
-let zoom a = scale a zo
+let zoom r = scale r zo
 
-let unzoom a = scale a (1. /. zo)
+let unzoom r = scale r (1. /. zo)
 
-let change_size_x x a = {a with window= {a.window with sx= x}}
+let change_size_x x r =
+  let window = {r.window with sx= x} in
+  let abstract_screen = recompute_screen r.scene window r.env2d in
+  {r with window; abstract_screen}
 
-let change_size_y y a = {a with window= {a.window with sy= y}}
+let change_size_y y r =
+  let window = {r.window with sy= y} in
+  let abstract_screen = recompute_screen r.scene window r.env2d in
+  {r with window; abstract_screen}
 
-let change_size x y a = {a with window= {a.window with sx= x; sy= y}}
+let change_size x y r =
+  let window = {r.window with sx= x; sy= y} in
+  let abstract_screen = recompute_screen r.scene window r.env2d in
+  {r with window; abstract_screen}
 
 let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   let r =
@@ -100,7 +145,9 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   if auto then
     let i1, i2 = Drawable.bounds r.abciss r.ordinate x in
     let (l1, u1), (l2, u2) = Intervalext.(to_float i1, to_float i2) in
-    {r with scene= set_scene r.scene l1 u1 l2 u2}
+    let scene = set_scene r.scene l1 u1 l2 u2 in
+    let abstract_screen = recompute_screen scene r.window r.env2d in
+    {r with scene; abstract_screen}
   else r
 
 let add_l ?autofit:(auto = true) r drawables =
@@ -119,29 +166,17 @@ let focus r =
     |> to_float
   in
   let x_min, x_max = bounds r.abciss and y_min, y_max = bounds r.ordinate in
-  {r with scene= {x_min; x_max; y_min; y_max}}
+  let scene = {x_min; x_max; y_min; y_max} in
+  let abstract_screen = recompute_screen scene r.window r.env2d in
+  {r with scene; abstract_screen}
 
-(* given a window and a scene, returns a function that maps an abstract
-   coordinate to a point of the scene to the window *)
-let normalize u =
-  let s, w = (u.scene, u.window) in
-  let to_coord (min_x, max_x) (min_y, max_y) (a, b) =
-    let a = projection (min_x, max_x) (w.padding, w.sx -. w.padding) a
-    and b = projection (min_y, max_y) (w.padding, w.sy -. w.padding) b in
-    (a, b)
-  in
-  to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
+let normalize r =
+  let s, w = (r.scene, r.window) in
+  normalize s w
 
-(* given a window and a scene, returns a function that maps an
- *     a point of the window to the abstract coordinate of the scene *)
-let denormalize u =
-  let s, w = (u.scene, u.window) in
-  let to_coord (min_x, max_x) (min_y, max_y) (a, b) =
-    let a = projection (w.padding, w.sx -. w.padding) (min_x, max_x) a
-    and b = projection (w.padding, w.sy -. w.padding) (min_y, max_y) b in
-    (a, b)
-  in
-  to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
+let denormalize r =
+  let s, w = (r.scene, r.window) in
+  denormalize s w
 
 (* convex hull computation *)
 let to_vertice r e =
@@ -180,7 +215,8 @@ let array_var render =
    ones we: 1) compute the hull for bounded elements 2) project the unbounded
    ones on the specified variables *)
 let set_proj_vars r v1 v2 =
-  let r = {r with abciss= v1; ordinate= v2; env2d= E.make_s [||] [|v1; v2|]} in
+  let env2d = E.make_s [||] [|v1; v2|] in
+  let r = {r with abciss= v1; ordinate= v2; env2d} in
   let bounded, unbounded =
     List.fold_left
       (fun (b, u) (c, pol) ->
@@ -190,14 +226,6 @@ let set_proj_vars r v1 v2 =
       ([], []) r.elems
   in
   focus {r with bounded; unbounded}
-
-(* TODO: recompute screen only when the window changes size and when projection
-   variables are changed *)
-let abstract_screen r =
-  let to_gens (x, y) = G.of_float_point r.env2d [x; y] in
-  [(0., 0.); (r.window.sx, 0.); (r.window.sx, r.window.sy); (0., r.window.sy)]
-  |> List.rev_map (fun pt -> to_gens (denormalize r pt))
-  |> Apol.of_generator_list
 
 (* computes the list of abstract elements that are under a concrete
    coordinate *)
@@ -220,10 +248,9 @@ let hover (pt : Geometry.point) (r : t) : t * bool =
 let highlight_to_vertices r =
   let norm = normalize r in
   let r = set_proj_vars r r.abciss r.ordinate in
-  let screen = abstract_screen r in
   List.fold_left
     (fun acc (c, e) ->
-      let interscreen = Apol.meet e screen in
+      let interscreen = Apol.meet e r.abstract_screen in
       if Apol.is_bottom interscreen then acc
       else (c, to_vertice r interscreen) :: acc )
     [] r.highlighted
@@ -232,10 +259,9 @@ let highlight_to_vertices r =
 let to_vertices r =
   let norm = normalize r in
   let r = set_proj_vars r r.abciss r.ordinate in
-  let screen = abstract_screen r in
   List.fold_left
     (fun acc (c, e) ->
-      let interscreen = Apol.meet e screen in
+      let interscreen = Apol.meet e r.abstract_screen in
       if Apol.is_bottom interscreen then acc
       else (c, to_vertice r interscreen) :: acc )
     r.bounded r.unbounded
