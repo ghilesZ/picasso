@@ -3,7 +3,7 @@ module L = Linconsext
 module G = Generatorext
 module E = Environmentext
 
-type t = Polka.strict Polka.t Apronext.Apol.A.t list
+type t = Apol.t list
 
 and point = float list
 
