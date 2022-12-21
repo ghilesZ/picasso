@@ -39,7 +39,7 @@ let hull : point list -> hull = function
         else if p2 = p then -1
         else
           let ccw = ccw p p1 p2 in
-          -int_of_float ccw
+          if ccw < 0. then 1 else if ccw = 0. then 0 else -1
       in
       let rec aux cl conv =
         match (cl, conv) with
