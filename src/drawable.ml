@@ -29,7 +29,7 @@ let of_ranges vars ranges =
   let vars = Array.of_list vars in
   let env = E.make_s [||] vars in
   let itvf = Array.of_list ranges in
-  let itv = Array.map (fun (l, u) -> Apron.Interval.of_float l u) itvf in
+  let itv = Array.map (fun (l, u) -> Intervalext.of_float l u) itvf in
   [Abox.of_box env (Array.map Apron.Var.of_string vars) itv |> Abox.to_poly]
 
 let union : t -> t -> t = List.rev_append
@@ -61,7 +61,14 @@ let print fmt (t : t) =
     (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.print)
     t
 
-let pp_print fmt (t : t) =
+(* use box printing instead of polyhedra if possible *)
+let pp_print_elem fmt p =
+  let b = Apol.to_box p in
+  let p' = Abox.to_poly b in
+  if Apol.is_leq p' p then Format.fprintf fmt "%a" Abox.pp_print b
+  else Format.fprintf fmt "%a" Apol.pp_print p
+
+let pp_print fmt (p : t) =
   Format.fprintf fmt "%a"
-    (Format.pp_print_list ~pp_sep:Tools.newline_sep Apol.pp_print)
-    t
+    (Format.pp_print_list ~pp_sep:Tools.newline_sep pp_print_elem)
+    p

@@ -12,3 +12,8 @@
  (name scale)
  (modules scale)
  (libraries picasso))
+
+(executable
+ (name ppbox)
+ (modules ppbox)
+ (libraries picasso))
