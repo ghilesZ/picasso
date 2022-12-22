@@ -105,34 +105,32 @@ module Make (D : Manager.T) = struct
 
   let draw_axes r =
     let open Rendering in
-    let pad = 30. in
-    let x0, y0 = (0., 0.) in
-    let left = r.scene.x_min and right = r.scene.x_max in
-    let up = r.scene.y_max and down = r.scene.y_min in
-    let hx, hy = normalize r (left, y0)
-    and hx', hy' = normalize r (right, y0) in
+    let x0, y0 = (10., 10.) in
+    let left = 0. and right = r.window.sx in
+    let up = r.window.sy and down = 0. in
+    let hx, hy = (left, y0) and hx', hy' = (right, y0) in
     let th = 2. in
     let thick_line =
       [(hx, hy +. th); (hx, hy -. th); (hx', hy' -. th); (hx', hy' +. th)]
     in
     fill_poly gray thick_line ;
-    let vx, vy = normalize r (x0, down) and vx', vy' = normalize r (x0, up) in
+    let vx, vy = (x0, down) and vx', vy' = (x0, up) in
     let thick_line =
       [(vx +. th, vy); (vx -. th, vy); (vx' -. th, vy'); (vx' +. th, vy')]
     in
     fill_poly gray thick_line ;
     let mb_size = 6. in
-    (* vetrtical minibars and coordinates *)
+    (* horizontal minibars and coordinates *)
     let fx =
       let flag = ref 0 in
       fun cur ->
         let text = Format.asprintf "%a" Tools.pp_float cur in
         let x, _ = normalize r (cur, down) in
         draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
-        if !flag mod 4 = 0 then draw_text darkgray `Center (x, hy) text ;
+        if !flag mod 4 = 0 then draw_text darkgray `Center (x, hy +. 20.) text ;
         incr flag
     in
-    (* hozizontal minibar coordinates *)
+    (* vertical minibar coordinates *)
     let fy =
       let flag = ref 0 in
       fun cur ->
@@ -143,8 +141,8 @@ module Make (D : Manager.T) = struct
         incr flag
     in
     graduation 0.5 fx fy r ;
-    draw_text black `Center (r.window.sx /. 2., pad /. 2.) r.abciss ;
-    draw_text black `Center (pad /. 2., r.window.sy /. 2.) r.ordinate
+    draw_text black `Center (r.window.sx /. 2., 0.) r.abciss ;
+    draw_text black `Center (0., r.window.sy /. 2.) r.ordinate
 
   (* main drawing function *)
   let draw r =
