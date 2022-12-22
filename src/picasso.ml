@@ -24,17 +24,22 @@ let to_svg = Svg.output
 
 let to_obj = Obj.output
 
-let backends : (Rendering.t -> unit) list =
-  [in_gtk_canvas; in_graphics_canvas; Svg.output]
+let backends : (string * (Rendering.t -> unit)) list =
+  [ ("gtk", in_gtk_canvas)
+  ; ("graphics", in_graphics_canvas)
+  ; ("svg", fun r -> Svg.output r) ]
 
 let show render =
-  try
-    List.iter
-      (fun f ->
-        try f render ; raise Exit
-        with BackendError s -> Format.eprintf "Picasso warning:\n%s" s )
-      backends
-  with Exit -> ()
+  let rec find_backend = function
+    | [] -> (* should not occur *) failwith "no backend available"
+    | [(_, b)] -> b render
+    | (_n1, b1) :: ((n2, _b2) :: _ as tl) ->
+        ( try b1 render ; raise Exit
+          with BackendError s ->
+            Format.eprintf "Picasso warning:\n%s, retrying with %s\n" s n2 ) ;
+        find_backend tl
+  in
+  try find_backend backends with Exit -> ()
 
 (* let in_gtk_animated = Canvas.build_animate
  *
