@@ -13,14 +13,15 @@ let trail_ending_zeros str =
   let nb_end_zero = aux 0 0 in
   String.sub str 0 (len - nb_end_zero)
 
-let pp_float fmt f =
+let pp_float ?max_decimals:(max = 16) fmt f =
   let i_c = iof (ceil f) in
   let i_f = iof (floor f) in
   let i =
     if abs_float (float i_c -. f) < abs_float (float i_f -. f) then i_c else i_f
   in
   if abs_float (foi i -. f) < 0.001 then Format.fprintf fmt "%i" i
-  else Format.fprintf fmt "%s" (trail_ending_zeros (Format.asprintf "%f" f))
+  else
+    Format.fprintf fmt "%s" (trail_ending_zeros (Format.asprintf "%.*f" max f))
 
 let newline_sep fmt () = Format.fprintf fmt "\n"
 

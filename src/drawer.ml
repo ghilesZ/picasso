@@ -123,6 +123,8 @@ module Make (D : Manager.T) = struct
       (fun x -> x +. step_x)
       (( < ) (render.scene.y_max +. step_y))
 
+  let nb_digits n = if n > 1. then 0 else int_of_float (ceil ~-.(log10 n))
+
   let draw_axes r =
     let open Rendering in
     let x0, y0 = (10., 10.) in
@@ -140,16 +142,28 @@ module Make (D : Manager.T) = struct
     in
     fill_poly gray thick_line ;
     let mb_size = 6. in
+    let sx = r.scene.x_max -. r.scene.x_min in
+    let sy = r.scene.y_max -. r.scene.y_min in
+    let step_x = closest_half_power_of_10 sx /. 2. in
+    let step_y = closest_half_power_of_10 sy /. 2. in
     (* horizontal minibars and coordinates *)
     let fx cur =
-      let text = Format.asprintf "%a" Tools.pp_float cur in
+      let text =
+        Format.asprintf "%a"
+          (Tools.pp_float ~max_decimals:(nb_digits step_x))
+          cur
+      in
       let x, _ = normalize r (cur, down) in
       draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
       draw_text darkgray `Center (x, hy +. 20.) text
     in
     (* vertical minibar coordinates *)
     let fy cur =
-      let text = Format.asprintf "%a" Tools.pp_float cur in
+      let text =
+        Format.asprintf "%a"
+          (Tools.pp_float ~max_decimals:(nb_digits step_y))
+          cur
+      in
       let _, y = normalize r (left, cur) in
       draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y) ;
       draw_text darkgray `Center (vx, y) text
