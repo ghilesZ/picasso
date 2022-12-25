@@ -1,8 +1,8 @@
 opam-version: "2.0"
 version:"0.3.0"
-maintainer: "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
+maintainer: "Ghiles Ziat <ghiles.ziat@epita.fr"
 authors: [
-  "Ghiles Ziat <ghiles.ziat@isae-supaero.fr"
+  "Ghiles Ziat <ghiles.ziat@epita.fr"
   "Matthieu Journault <Matthieu.journault@lip6.fr>"
   ]
 homepage: "https://github.com/ghilesZ/picasso"

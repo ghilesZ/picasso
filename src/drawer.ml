@@ -9,6 +9,9 @@ module Make (D : Manager.T) = struct
 
   let y_max = ref 0.
 
+  let nb_graduation =
+    10. (* target number of graduation, the actual will differ slightly *)
+
   let square ((a, b) as bl) ((c, d) as tr) = [bl; (c, b); tr; (a, d)]
 
   (* screen as a polygon *)
@@ -76,32 +79,49 @@ module Make (D : Manager.T) = struct
     let p1 = normalize r (left, cur) and p2 = normalize r (right, cur) in
     draw_line ~dashed:true lightgray p1 p2
 
+  let closest_power_of_10 x =
+    let xl10 = log10 x in
+    10. ** Float.round xl10
+
+  let closest_half_power_of_10 x =
+    let xl10 = log10 x in
+    let up = 10. ** Float.ceil xl10 in
+    let down = 10. ** Float.floor xl10 in
+    let mid = up /. 2. in
+    let dif_down = abs_float (down -. x) in
+    let dif_up = abs_float (up -. x) in
+    let dif_mid = abs_float (mid -. x) in
+    if dif_mid < dif_down then if dif_mid < dif_up then mid else up
+    else if dif_down < dif_up then down
+    else up
+
   let draw_grid render =
     let open Rendering in
     let sx = render.scene.x_max -. render.scene.x_min in
     let sy = render.scene.y_max -. render.scene.y_min in
-    let xl10 = 10. ** (log10 sx -. 1.) in
-    let yl10 = 10. ** (log10 sy -. 1.) in
-    let min_x = floor (render.scene.x_min /. xl10) *. xl10 in
-    let min_y = floor (render.scene.y_min /. yl10) *. yl10 in
-    Tools.iterate (xline render) min_x (( +. ) xl10) (( < ) render.scene.x_max) ;
-    Tools.iterate (yline render) min_y (( +. ) yl10) (( < ) render.scene.y_max)
+    let step_x = closest_power_of_10 sx /. 10. in
+    let step_y = closest_power_of_10 sy /. 10. in
+    let fst_x = (render.scene.x_min /. step_x |> floor) *. step_x in
+    let fst_y = (render.scene.y_min /. step_y |> floor) *. step_y in
+    Tools.iterate (xline render) fst_x (( +. ) step_x)
+      (( < ) render.scene.x_max) ;
+    Tools.iterate (yline render) fst_y (( +. ) step_y)
+      (( < ) render.scene.y_max)
 
-  let graduation rating fx fy render =
-    let stepify dim =
-      (* TODO:less hardcode *)
-      let step = dim /. 10. in
-      let exp = log10 step |> ceil in
-      let c = step /. (10. ** exp) in
-      c *. (10. ** exp) *. rating
-    in
+  let graduation fx fy render =
     let open Rendering in
-    let left = render.scene.x_min and right = render.scene.x_max in
-    let down = render.scene.y_min and up = render.scene.y_max in
-    let step_w = stepify (right -. left) in
-    let step_h = stepify (up -. down) in
-    Tools.iterate fx left (( +. ) step_w) (( < ) right) ;
-    Tools.iterate fy down (( +. ) step_h) (( < ) up)
+    let sx = render.scene.x_max -. render.scene.x_min in
+    let sy = render.scene.y_max -. render.scene.y_min in
+    let step_x = closest_half_power_of_10 sx /. 2. in
+    let step_y = closest_half_power_of_10 sy /. 2. in
+    let fst_x = (render.scene.x_min /. step_x |> floor) *. step_x in
+    let fst_y = (render.scene.y_min /. step_y |> floor) *. step_y in
+    Tools.iterate fx fst_x
+      (fun x -> x +. step_x)
+      (( < ) (render.scene.x_max +. step_x)) ;
+    Tools.iterate fy fst_y
+      (fun x -> x +. step_x)
+      (( < ) (render.scene.y_max +. step_y))
 
   let draw_axes r =
     let open Rendering in
@@ -109,7 +129,7 @@ module Make (D : Manager.T) = struct
     let left = 0. and right = r.window.sx in
     let up = r.window.sy and down = 0. in
     let hx, hy = (left, y0) and hx', hy' = (right, y0) in
-    let th = 2. in
+    let th = 3. in
     let thick_line =
       [(hx, hy +. th); (hx, hy -. th); (hx', hy' -. th); (hx', hy' +. th)]
     in
@@ -121,26 +141,20 @@ module Make (D : Manager.T) = struct
     fill_poly gray thick_line ;
     let mb_size = 6. in
     (* horizontal minibars and coordinates *)
-    let fx =
-      let flag = ref 0 in
-      fun cur ->
-        let text = Format.asprintf "%a" Tools.pp_float cur in
-        let x, _ = normalize r (cur, down) in
-        draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
-        if !flag mod 4 = 0 then draw_text darkgray `Center (x, hy +. 20.) text ;
-        incr flag
+    let fx cur =
+      let text = Format.asprintf "%a" Tools.pp_float cur in
+      let x, _ = normalize r (cur, down) in
+      draw_line ~dashed:false gray (x, hy -. mb_size) (x, hy +. mb_size) ;
+      draw_text darkgray `Center (x, hy +. 20.) text
     in
     (* vertical minibar coordinates *)
-    let fy =
-      let flag = ref 0 in
-      fun cur ->
-        let text = Format.asprintf "%a" Tools.pp_float cur in
-        let _, y = normalize r (left, cur) in
-        draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y) ;
-        if !flag mod 4 = 0 then draw_text darkgray `Center (vx, y) text ;
-        incr flag
+    let fy cur =
+      let text = Format.asprintf "%a" Tools.pp_float cur in
+      let _, y = normalize r (left, cur) in
+      draw_line ~dashed:false gray (vx -. mb_size, y) (vx +. mb_size, y) ;
+      draw_text darkgray `Center (vx, y) text
     in
-    graduation 0.5 fx fy r ;
+    graduation fx fy r ;
     draw_text black `Center (r.window.sx /. 2., 0.) r.abciss ;
     draw_text black `Center (0., r.window.sy /. 2.) r.ordinate
 

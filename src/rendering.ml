@@ -42,6 +42,8 @@ and scene_settings = {x_min: float; x_max: float; y_min: float; y_max: float}
 let empty_scene =
   {x_min= infinity; x_max= neg_infinity; y_min= infinity; y_max= neg_infinity}
 
+let scene_size {x_min; x_max; y_min; y_max} = (x_max -. x_min, y_max -. y_min)
+
 (* given a window and a scene, returns a function that maps an abstract
    coordinate to a point of the scene to the window *)
 let normalize s w =
