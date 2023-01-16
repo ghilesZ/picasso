@@ -100,12 +100,12 @@ module Rendering : sig
     -> float
     -> float
     -> t
-  (** Initalizes an empty 2d scenes. *)
+  (** Initalizes an empty 2d scene. *)
 
   val add : ?autofit:bool -> t -> Colors.t * Drawable.t -> t
   (** Registers an abstract element, associated to a color, into a scene.
       Automatically changes the camera settings to encompass the newly added
-      abstract element. You can cancel this behaviour by settings the optional
+      abstract element. You can disable this behaviour by settings the optional
       argument [autofit] to [false]*)
 
   val add_l : ?autofit:bool -> t -> (Colors.t * Drawable.t) list -> t

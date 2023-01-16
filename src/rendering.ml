@@ -1,5 +1,6 @@
-(* this modules handles the link between a physical window (size, padding, etc)
-   and an abstract scene (zoom, "camera angle") *)
+(* this module handles the link between a physical window (size, padding, etc)
+   an abstract scene (zoom, "camera angle"), and the content to be rendered
+   (abstract elements) *)
 
 open Tools
 open Apronext
@@ -26,6 +27,8 @@ type t =
   ; abstract_screen: Apol.t
   ; (* content *)
     elems: (Colors.t * Apol.t) list
+  ; interscreen:
+      (Colors.t * Apol.t) list (* the elements that are visible in the screen *)
   ; env2d: E.t (* 2d apron environment *)
   ; highlighted: (Colors.t * Apol.t) list (* elems under cursor *)
   ; (* elems projected on the projection variables. We differentiate the bounded
@@ -64,12 +67,22 @@ let denormalize s w =
   in
   to_coord (s.x_min, s.x_max) (s.y_min, s.y_max)
 
+(* helper that computes an abstract screen from a scene and a window *)
 let update_screen s w env2d =
   let to_gens (x, y) = G.of_float_point env2d [x; y] in
   [(0., 0.); (w.sx, 0.); (w.sx, w.sy); (0., w.sy)]
   |> List.rev_map (fun pt -> to_gens (denormalize s w pt))
   |> Apol.of_generator_list
 
+(* helper that computes the list of abstract elements that are visible *)
+let update_interscreen elems abstract_screen =
+  List.fold_left
+    (fun acc (c, e) ->
+      let e_screen = Apol.meet e abstract_screen in
+      if Apol.is_bottom e_screen then acc else (c, e_screen) :: acc )
+    [] elems
+
+(* initialization of an empty rendering object *)
 let create ?title ?padding:(pad = 60.) ?grid ?axis ~abciss ~ordinate sx sy =
   let window = {padding= pad; sx; sy; title} in
   let scene = empty_scene in
@@ -80,6 +93,7 @@ let create ?title ?padding:(pad = 60.) ?grid ?axis ~abciss ~ordinate sx sy =
   ; axis= Option.value axis ~default:true
   ; grid= Option.value grid ~default:true
   ; elems= []
+  ; interscreen= []
   ; abciss
   ; ordinate
   ; env2d
@@ -99,6 +113,7 @@ let set_scene s x_min x_max y_min y_max =
   ; y_min= min y_min s.y_min
   ; y_max= max y_max s.y_max }
 
+(* translation of the scene *)
 let translate (x, y) r =
   let x = x /. r.window.sx in
   let y = y /. r.window.sy in
@@ -111,7 +126,8 @@ let translate (x, y) r =
     ; y_max= r.scene.y_max -. ly }
   in
   let abstract_screen = update_screen scene r.window r.env2d in
-  {r with scene; abstract_screen}
+  let interscreen = update_interscreen r.elems abstract_screen in
+  {r with scene; abstract_screen; interscreen}
 
 let scale r alpha =
   let center_x = 0.5 *. (r.scene.x_max +. r.scene.x_min) in
@@ -122,7 +138,8 @@ let scale r alpha =
   let y_max = center_y +. ((r.scene.y_max -. center_y) *. alpha) in
   let scene = {x_min; x_max; y_min; y_max} in
   let abstract_screen = update_screen scene r.window r.env2d in
-  {r with scene; abstract_screen}
+  let interscreen = update_interscreen r.elems abstract_screen in
+  {r with scene; abstract_screen; interscreen}
 
 let zoom r = scale r zo
 
@@ -147,13 +164,23 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   let r =
     {r with elems= List.fold_left (fun acc e -> (c, e) :: acc) r.elems x}
   in
-  if auto then
-    let i1, i2 = Drawable.bounds r.abciss r.ordinate x in
-    let (l1, u1), (l2, u2) = Intervalext.(to_float i1, to_float i2) in
-    let scene = set_scene r.scene l1 u1 l2 u2 in
-    let abstract_screen = update_screen scene r.window r.env2d in
-    {r with scene; abstract_screen}
-  else r
+  let r =
+    if auto then
+      let i1, i2 = Drawable.bounds r.abciss r.ordinate x in
+      let (l1, u1), (l2, u2) = Intervalext.(to_float i1, to_float i2) in
+      let scene = set_scene r.scene l1 u1 l2 u2 in
+      let abstract_screen = update_screen scene r.window r.env2d in
+      {r with scene; abstract_screen}
+    else r
+  in
+  let interscreen =
+    List.fold_left
+      (fun acc e ->
+        let e_screen = Apol.meet e r.abstract_screen in
+        if Apol.is_bottom e_screen then acc else (c, e_screen) :: acc )
+      r.interscreen x
+  in
+  {r with interscreen}
 
 let add_l ?autofit:(auto = true) r drawables =
   List.fold_left (add ~autofit:auto) r drawables
@@ -173,7 +200,8 @@ let focus r =
   let x_min, x_max = bounds r.abciss and y_min, y_max = bounds r.ordinate in
   let scene = {x_min; x_max; y_min; y_max} in
   let abstract_screen = update_screen scene r.window r.env2d in
-  {r with scene; abstract_screen}
+  let interscreen = update_interscreen r.elems abstract_screen in
+  {r with scene; abstract_screen; interscreen}
 
 let normalize r =
   let s, w = (r.scene, r.window) in
@@ -245,7 +273,7 @@ let hover (pt : Geometry.point) (r : t) : t * bool =
         let constr = Apol.to_lincons_list e in
         if List.for_all (Apol.sat_lincons abspt) constr then (col, e) :: acc
         else acc )
-      [] r.elems
+      [] r.interscreen
   in
   if highlighted <> r.highlighted then ({r with highlighted}, true)
   else (r, false)
@@ -261,6 +289,9 @@ let highlight_to_vertices r =
     [] r.highlighted
   |> List.rev_map (fun (c, e) -> (c, List.rev_map norm e))
 
+(* bounded elements will always be drawn, potentially "outside the window" and
+   will not be seen, unbounded elements are artificially bounded and only their
+   "visible" part is rendered *)
 let to_vertices r =
   let norm = normalize r in
   let r = set_proj_vars r r.abciss r.ordinate in
