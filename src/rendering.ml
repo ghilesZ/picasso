@@ -15,6 +15,14 @@ and sy = 1000.
 (* zoom sensitivity *)
 let zo = 1.1
 
+(* elements augmented with a cache, to avoid recomputing projections and convex
+   hulls. If the element projected on a pair of variable is bounded, then we
+   also put in cache its convex hull *)
+type elem =
+  { pol: Apol.t
+  ; col: Colors.t
+  ; proj_cache: (string * string, Apol.t * Geometry.hull option) Hashtbl.t }
+
 type t =
   { window: window_settings
   ; scene: scene_settings
@@ -212,19 +220,31 @@ let denormalize r =
   denormalize s w
 
 (* convex hull computation *)
-let to_vertice r e =
+let to_vertice abciss ordinate e =
   let gl = Apol.to_generator_list e in
-  if r.abciss = r.ordinate then
+  if abciss = ordinate then
     List.rev_map
       (fun g ->
         let f =
-          G.get_coeff g (Apron.Var.of_string r.abciss) |> Coeffext.to_float
+          G.get_coeff g (Apron.Var.of_string abciss) |> Coeffext.to_float
         in
         (f, f) )
       gl
   else
-    List.rev_map (fun g -> G.to_vertices2D_s g r.abciss r.ordinate) gl
+    List.rev_map (fun g -> G.to_vertices2D_s g abciss ordinate) gl
     |> Geometry.hull
+
+let proj_elem elem ((x, y) as key) =
+  match Hashtbl.find_opt elem.proj_cache key with
+  | Some (e2d, hull) -> (e2d, hull)
+  | None ->
+      let p2d = Apol.proj2D_s elem.pol x y in
+      let res =
+        if Apol.is_bounded p2d then (p2d, Some (to_vertice x y p2d))
+        else (p2d, None)
+      in
+      Hashtbl.add elem.proj_cache key res ;
+      res
 
 (* computes the union of environments of all variables *)
 let get_vars r =
@@ -254,7 +274,7 @@ let set_proj_vars r v1 v2 =
     List.fold_left
       (fun (b, u) (c, pol) ->
         let p2d = Apol.proj2D_s pol v1 v2 in
-        if Apol.is_bounded p2d then ((c, to_vertice r p2d) :: b, u)
+        if Apol.is_bounded p2d then ((c, to_vertice v1 v2 p2d) :: b, u)
         else (b, (c, p2d) :: u) )
       ([], []) r.elems
   in
@@ -285,7 +305,7 @@ let highlight_to_vertices r =
     (fun acc (c, e) ->
       let interscreen = Apol.meet e r.abstract_screen in
       if Apol.is_bottom interscreen then acc
-      else (c, to_vertice r interscreen) :: acc )
+      else (c, to_vertice r.abciss r.ordinate interscreen) :: acc )
     [] r.highlighted
   |> List.rev_map (fun (c, e) -> (c, List.rev_map norm e))
 
@@ -299,6 +319,6 @@ let to_vertices r =
     (fun acc (c, e) ->
       let interscreen = Apol.meet e r.abstract_screen in
       if Apol.is_bottom interscreen then acc
-      else (c, to_vertice r interscreen) :: acc )
+      else (c, to_vertice r.abciss r.ordinate interscreen) :: acc )
     r.bounded r.unbounded
   |> List.rev_map (fun (c, h) -> (c, List.rev_map norm h))

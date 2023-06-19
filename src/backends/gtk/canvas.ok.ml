@@ -2,7 +2,6 @@
 
 open Tools
 open Geometry
-open GButton
 
 let find_index arr v =
   let exception Found of int in
@@ -42,18 +41,18 @@ class textarea ~width ~height ~packing () =
 class toolbar ~width ~height ~hpack ~vpack () =
   (* horizontal toolbar *)
   let tb_h = layout ~packing:hpack ~size:(width - 40) ~orientation:`H 6 in
-  let prev_var_h = button ~packing:tb_h.(0)#add () in
+  let prev_var_h = GButton.button ~packing:tb_h.(0)#add () in
   let _ = GMisc.label ~packing:tb_h.(2)#add ~text:"X axis: " () in
   let cur_h = GMisc.label ~packing:tb_h.(3)#add () in
-  let next_var_h = button ~packing:tb_h.(5)#add () in
+  let next_var_h = GButton.button ~packing:tb_h.(5)#add () in
   (* vertical toolbar *)
   let v0 = GPack.vbox ~height ~packing:vpack () in
   let tb_v = layout ~packing:v0#add ~size:(height - 40) 6 ~orientation:`V in
   let _lab = GMisc.label ~packing:v0#add () in
-  let prev_var_v = button ~packing:tb_v.(0)#add () in
+  let prev_var_v = GButton.button ~packing:tb_v.(0)#add () in
   let _ = GMisc.label ~packing:tb_v.(2)#add ~text:"\tY\n axis: " () in
   let cur_v = GMisc.label ~packing:tb_v.(3)#add () in
-  let next_var_v = button ~packing:tb_v.(5)#add () in
+  let next_var_v = GButton.button ~packing:tb_v.(5)#add () in
   object (self)
     val mutable abc = 0
 
