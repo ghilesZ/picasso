@@ -111,15 +111,21 @@ class clickable ~packing ~width ~height () =
   let oc = Gdk.Cursor.create `FLEUR in
   object (self)
     initializer
-    ignore
-      ( da#event#add [`BUTTON_PRESS; `BUTTON_RELEASE; `POINTER_MOTION; `SCROLL] ;
-        () )
+      da#event#add
+        [ `BUTTON_PRESS
+        ; `BUTTON_RELEASE
+        ; `KEY_PRESS
+        ; `KEY_RELEASE
+        ; `POINTER_MOTION
+        ; `SCROLL ]
 
     (* minimum threshold under which we do not trigger the drag event *)
-    val mutable tolerance = 900. (* 30. ^ 2. *)
+    val tolerance = 900. (* 30. ^ 2. *)
 
     (* trigger the hover event one every "hoverratio" times *)
-    val mutable hoverratio = 3
+    val hoverratio = 3
+
+    val mutable shift = false
 
     val mutable old : point option = None
 
@@ -191,13 +197,17 @@ class clickable ~packing ~width ~height () =
         ignore
           (da#event#connect#motion_notify ~callback:(fun c ->
                ( if !cpt mod hoverratio = 0 then
-                 let p = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
-                 f (self#get_coord p) ) ;
+                   let p = (GdkEvent.Motion.x c, GdkEvent.Motion.y c) in
+                   if shift then f (self#get_coord p) ) ;
                incr cpt ; false ) )
+
+    method shift = shift <- true
+
+    method unshift = shift <- false
 
     (* initializes mouse event with some functions. by default, all events are
        connected to an no-op function *)
-    method mouse_set ?expose:(exp = ignore) ?press:(pl = ignore)
+    method listen ?expose:(exp = ignore) ?press:(pl = ignore)
         ?release:(rl = ignore) ?click:(cl = ignore) ?drag:(dl = fun _ _ -> ())
         ?scrollwheel:(sw = ignore) ?motion:(mo = ignore) () =
       self#expose exp ;
@@ -307,7 +317,7 @@ class canvas ~packing ~width ~height () =
 
     method set_render (render : Rendering.t ref) =
       rend <- Some render ;
-      self#mouse_set
+      self#listen
         ~expose:(fun (a, b) ->
           render := !render |> Rendering.change_size (float a) (float b) ;
           self#repaint () )
@@ -358,6 +368,14 @@ let build render =
   let hbox = GPack.hbox ~width ~packing:window#add () in
   let vbox = GPack.vbox ~width:(width - 40) ~packing:hbox#add () in
   let c = new canvas ~packing:vbox#add ~height:(height - 70) ~width () in
+  ignore
+    (window#event#connect#key_press ~callback:(fun k ->
+         if GdkEvent.Key.keyval k = 65505 then c#shift ;
+         false ) ) ;
+  ignore
+    (window#event#connect#key_release ~callback:(fun k ->
+         if GdkEvent.Key.keyval k = 65505 then c#unshift ;
+         false ) ) ;
   let tb = new toolbar ~height ~width ~hpack:vbox#add ~vpack:hbox#add () in
   let txt = new textarea ~packing:vbox#add ~height:50 ~width () in
   let render = ref render in
