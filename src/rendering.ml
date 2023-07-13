@@ -83,10 +83,11 @@ let update_screen s w env2d =
   |> Apol.of_generator_list
 
 (* helper that computes the list of abstract elements that are visible *)
-let update_interscreen elems abstract_screen =
+let update_interscreen elems r =
   List.fold_left
     (fun acc (c, e) ->
-      let e_screen = Apol.meet e abstract_screen in
+      let e = Apol.change_environment e r.env2d in
+      let e_screen = Apol.meet e r.abstract_screen in
       if Apol.is_bottom e_screen then acc else (c, e_screen) :: acc )
     [] elems
 
@@ -134,7 +135,7 @@ let translate (x, y) r =
     ; y_max= r.scene.y_max -. ly }
   in
   let abstract_screen = update_screen scene r.window r.env2d in
-  let interscreen = update_interscreen r.elems abstract_screen in
+  let interscreen = update_interscreen r.elems r in
   {r with scene; abstract_screen; interscreen}
 
 let scale r alpha =
@@ -146,7 +147,7 @@ let scale r alpha =
   let y_max = center_y +. ((r.scene.y_max -. center_y) *. alpha) in
   let scene = {x_min; x_max; y_min; y_max} in
   let abstract_screen = update_screen scene r.window r.env2d in
-  let interscreen = update_interscreen r.elems abstract_screen in
+  let interscreen = update_interscreen r.elems r in
   {r with scene; abstract_screen; interscreen}
 
 let zoom r = scale r zo
@@ -184,7 +185,9 @@ let add ?autofit:(auto = true) r ((c, x) : Colors.t * Drawable.t) =
   let interscreen =
     List.fold_left
       (fun acc e ->
-        let e_screen = Apol.meet e r.abstract_screen in
+        let e_screen =
+          Apol.proj2D_s e r.abciss r.ordinate |> Apol.meet r.abstract_screen
+        in
         if Apol.is_bottom e_screen then acc else (c, e_screen) :: acc )
       r.interscreen x
   in
@@ -198,17 +201,16 @@ let add_l ?autofit:(auto = true) r drawables =
 let focus r =
   let open Intervalext in
   let bounds v =
-    r.elems
-    |> List.fold_left
-         (fun acc (_, e) ->
-           try Apol.bound_variable_s e v |> join acc with Failure _ -> acc )
-         bottom
+    List.fold_left
+      (fun acc (_, e) ->
+        try Apol.bound_variable_s e v |> join acc with Failure _ -> acc )
+      bottom r.elems
     |> to_float
   in
   let x_min, x_max = bounds r.abciss and y_min, y_max = bounds r.ordinate in
   let scene = {x_min; x_max; y_min; y_max} in
   let abstract_screen = update_screen scene r.window r.env2d in
-  let interscreen = update_interscreen r.elems abstract_screen in
+  let interscreen = update_interscreen r.elems r in
   {r with scene; abstract_screen; interscreen}
 
 let normalize r =
@@ -278,7 +280,8 @@ let set_proj_vars r v1 v2 =
         else (b, (c, p2d) :: u) )
       ([], []) r.elems
   in
-  focus {r with bounded; unbounded}
+  let abstract_screen = update_screen r.scene r.window env2d in
+  focus {r with bounded; unbounded; abstract_screen}
 
 (* computes the list of abstract elements that are under a concrete
    coordinate *)
