@@ -70,7 +70,7 @@ module Drawable : sig
   val of_ranges : string list -> range list -> t
   (** Builds a drawable hypercube from a list of variable and a list of ranges.
 
-      @raise Invalid_arg
+      @raise Invalid_argument
         if the range list and the variable list do not have the same length *)
 
   (** {1 Operations} *)

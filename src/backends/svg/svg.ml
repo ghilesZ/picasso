@@ -7,7 +7,7 @@ let set_output out =
 
 let output ?filename render =
   let open Rendering in
-  let fn = Tools.spawn_filename filename render.window.title "picasso" "svg" in
+  let fn = Tools.spawn_filename filename render.window.title "picasso" ".svg" in
   Svgcanvas.init render.window.sx render.window.sy fn ;
   fill_poly white (screen ()) ;
   draw render ;
