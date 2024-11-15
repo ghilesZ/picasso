@@ -296,6 +296,8 @@ module Gtkcanvas = struct
   let fill_poly = poly true
 
   let draw_poly = poly false
+
+  let comment : string -> unit = ignore
 end
 
 module Draw = Drawer.Make (Gtkcanvas)

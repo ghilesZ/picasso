@@ -30,4 +30,6 @@ module type T = sig
   val draw_poly : color -> point list -> unit
 
   val fill_poly : color -> point list -> unit
+
+  val comment : string -> unit
 end

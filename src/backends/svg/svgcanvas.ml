@@ -67,9 +67,7 @@ let draw_line ~dashed (r, g, b) (x1, y1) (x2, y2) =
 let circle fill (r, g, b) (x, y) rad =
   let c = name r g b in
   emit "<circle cx=\"%f\" cy=\"%f\" r=\"%f\"" x y rad ;
-  emit " %s=\"%s\" />\n%!"
-    (if fill then "fill" else "fill=\"none\" stroke")
-    c
+  emit " %s=\"%s\" />\n%!" (if fill then "fill" else "fill=\"none\" stroke") c
 
 let fill_circle = circle true
 
@@ -79,10 +77,10 @@ let poly fill (r, g, b) vertices =
   let c = name r g b in
   emit "<polygon points=\"" ;
   List.iter (fun (x, y) -> emit "%f,%f " x y) vertices ;
-  emit "\" %s=\"%s\" />\n%!"
-    (if fill then "fill" else "fill=\"none\" stroke")
-    c
+  emit "\" %s=\"%s\" />\n%!" (if fill then "fill" else "fill=\"none\" stroke") c
 
 let fill_poly = poly true
 
 let draw_poly = poly false
+
+let comment msg = emit "<!-- %s -->\n" msg

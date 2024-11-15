@@ -43,6 +43,8 @@ module D = struct
     set_color col ;
     let pts = List.rev_map Geometry.to_int_point pts |> Array.of_list in
     fill_poly pts
+
+  let comment : string -> unit = ignore
 end
 
 module Draw = Drawer.Make (D)

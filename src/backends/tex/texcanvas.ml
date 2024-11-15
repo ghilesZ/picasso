@@ -48,9 +48,7 @@ let header_full () =
   header ()
 
 let footer_full () =
-  footer () ;
-  emit "\\end{figure}\n%!" ;
-  emit "\\end{document}\n%!"
+  footer () ; emit "\\end{figure}\n%!" ; emit "\\end{document}\n%!"
 
 let init f =
   set_output f ;
@@ -92,8 +90,8 @@ let draw_text c p (x, y) text =
     | `Left | `Right -> failwith "draw text left right not implemented"
   in
   let c = define_color c in
-  emit "\\node[align=%s,text=%s,font=\\tiny] at (%f*\\sx, %f*\\sy) { %s };\n"
-    p c x y text
+  emit "\\node[align=%s,text=%s,font=\\tiny] at (%f*\\sx, %f*\\sy) { %s };\n" p
+    c x y text
 
 let draw_line ~dashed col (x1, y1) (x2, y2) =
   let col = define_color col in
@@ -118,3 +116,5 @@ let poly filldraw col vertices =
 let fill_poly = poly "fill"
 
 let draw_poly = poly "draw"
+
+let comment msg = emit "%% %s\n" msg

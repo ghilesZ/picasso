@@ -97,6 +97,7 @@ module Make (D : Manager.T) = struct
 
   let draw_grid render =
     let open Rendering in
+    D.comment "grid start" ;
     let sx = render.scene.x_max -. render.scene.x_min in
     let sy = render.scene.y_max -. render.scene.y_min in
     let step_x = closest_power_of_10 sx /. 10. in
@@ -106,7 +107,8 @@ module Make (D : Manager.T) = struct
     Tools.iterate (xline render) fst_x (( +. ) step_x)
       (( < ) render.scene.x_max) ;
     Tools.iterate (yline render) fst_y (( +. ) step_y)
-      (( < ) render.scene.y_max)
+      (( < ) render.scene.y_max) ;
+    D.comment "grid end"
 
   let graduation fx fy render =
     let open Rendering in
@@ -126,6 +128,7 @@ module Make (D : Manager.T) = struct
   let nb_digits n = if n > 1. then 0 else int_of_float (ceil ~-.(log10 n))
 
   let draw_axes r =
+    D.comment "axes start" ;
     let open Rendering in
     let x0, y0 = (10., 10.) in
     let left = 0. and right = r.window.sx in
@@ -170,7 +173,8 @@ module Make (D : Manager.T) = struct
     in
     graduation fx fy r ;
     draw_text black `Center (r.window.sx /. 2., 0.) r.abciss ;
-    draw_text black `Center (0., r.window.sy /. 2.) r.ordinate
+    draw_text black `Center (0., r.window.sy /. 2.) r.ordinate ;
+    D.comment "axes end"
 
   (* main drawing function *)
   let draw r =
