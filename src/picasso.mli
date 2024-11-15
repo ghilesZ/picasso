@@ -63,7 +63,7 @@ module Drawable : sig
   (** Same as of_gens, but build a convex hull from a list of a variables
       defining an environment and a list of points.
 
-      @raise Invalid_arg
+      @raise Invalid_argument
         if one points or more do not have as many dimension as the number of
         variables*)
 
